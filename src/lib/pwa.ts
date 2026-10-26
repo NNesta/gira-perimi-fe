@@ -1,4 +1,4 @@
-// Installing Gira Perimi as an app. Chrome/Android fire `beforeinstallprompt` (often before React hydrates), so an
+// Installing Tsinda Neza as an app. Chrome/Android fire `beforeinstallprompt` (often before React hydrates), so an
 // inline script keeps the event on window; iPhone/iPad have no prompt and need "Share → Add to Home Screen".
 
 type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };

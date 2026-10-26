@@ -26,7 +26,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-line/80 bg-surface/80 backdrop-blur-xl supports-[backdrop-filter]:bg-surface/70">
       <div className="container-page flex h-16 items-center justify-between gap-4">
-        <Link href="/" aria-label="Gira Perimi, ahabanza" className="rounded-xl">
+        <Link href="/" aria-label="Tsinda Neza, ahabanza" className="rounded-xl">
           <Logo />
         </Link>
         <Suspense fallback={<NavLinksView pathname="" />}>

@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Gira Perimi · Amategeko y’umuhanda",
-    short_name: "Gira Perimi",
+    name: "Tsinda Neza · Amategeko y’umuhanda",
+    short_name: "Tsinda Neza",
     description:
       "Iga amategeko y’umuhanda mu Kinyarwanda, witoze ibibazo by’ikizamini cy’uruhushya rw’agateganyo, n’igihe nta interineti ufite.",
     lang: "rw",

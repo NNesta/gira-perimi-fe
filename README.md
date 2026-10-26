@@ -1,6 +1,6 @@
-# Gira Perimi — website
+# Tsinda Neza — website
 
-Next.js frontend for **Gira Perimi**, a Kinyarwanda platform for learning Rwanda's road-traffic rules and practising
+Next.js frontend for **Tsinda Neza**, a Kinyarwanda platform for learning Rwanda's road-traffic rules and practising
 the provisional driving-licence theory exam. It talks to the FastAPI backend in `../gira-perimi-be`.
 
 Stack: Next.js 16 (App Router, Cache Components, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 ·

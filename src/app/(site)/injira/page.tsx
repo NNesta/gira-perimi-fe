@@ -12,7 +12,7 @@ import type { AuthConfig } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Injira",
-  description: "Injira cyangwa wiyandikishe kuri Gira Perimi ukoresheje konti yawe ya Gmail.",
+  description: "Injira cyangwa wiyandikishe kuri Tsinda Neza ukoresheje konti yawe ya Gmail.",
 };
 
 const BENEFITS = [

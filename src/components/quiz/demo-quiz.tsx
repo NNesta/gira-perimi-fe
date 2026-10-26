@@ -104,7 +104,7 @@ export function DemoQuiz() {
         <p className="mx-auto mt-4 max-w-md text-lg text-muted">
           {great
             ? "Ni byiza cyane! Iyandikishe ubike aho ugeze, maze ukore ikizamini cyuzuye cy’ibibazo 20."
-            : "Ntucike intege: ibi ni byo Gira Perimi igufasha kwiga. Iyandikishe utangire amasomo n’imyitozo."}
+            : "Ntucike intege: ibi ni byo Tsinda Neza igufasha kwiga. Iyandikishe utangire amasomo n’imyitozo."}
         </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <ButtonLink href="/injira" size="lg">

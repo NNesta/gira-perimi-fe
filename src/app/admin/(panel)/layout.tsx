@@ -10,7 +10,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { getSessionAdmin } from "@/lib/api-server";
 
 export const metadata: Metadata = {
-  title: { default: "Ubuyobozi", template: "%s · Ubuyobozi · Gira Perimi" },
+  title: { default: "Ubuyobozi", template: "%s · Ubuyobozi · Tsinda Neza" },
   robots: { index: false, follow: false },
 };
 

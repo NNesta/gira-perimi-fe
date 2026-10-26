@@ -15,7 +15,7 @@ export function InstallAppButton({ className }: { className?: string }) {
   if (state === "installed") {
     return (
       <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 dark:text-brand-300">
-        <BadgeCheck className="size-4" aria-hidden /> Gira Perimi iri kuri iki gikoresho
+        <BadgeCheck className="size-4" aria-hidden /> Tsinda Neza iri kuri iki gikoresho
       </span>
     );
   }
@@ -33,8 +33,8 @@ export function InstallAppButton({ className }: { className?: string }) {
       <Dialog
         open={iosHelp}
         onClose={() => setIosHelp(false)}
-        title="Shyira Gira Perimi kuri iPhone"
-        description="Mu ntambwe ebyiri, Gira Perimi iboneka kuri telefone yawe nk’izindi porogaramu."
+        title="Shyira Tsinda Neza kuri iPhone"
+        description="Mu ntambwe ebyiri, Tsinda Neza iboneka kuri telefone yawe nk’izindi porogaramu."
         size="sm"
       >
         <ol className="space-y-4">

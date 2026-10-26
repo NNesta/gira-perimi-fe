@@ -1,4 +1,4 @@
-// Gira Perimi service worker: makes the site installable and lets learners keep studying without a connection.
+// Tsinda Neza service worker: makes the site installable and lets learners keep studying without a connection.
 //
 //   /_next/static/*, /media/*  cache-first (file names are content-hashed; images never change in place)
 //   page navigations            network-first; the last copy of a page is served when offline

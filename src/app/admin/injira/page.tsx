@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
             <ShieldCheck className="size-4 text-brand-500" /> Ubuyobozi
           </p>
           <h1 className="mt-4 text-3xl font-extrabold">Injira nk’umuyobozi</h1>
-          <p className="mt-2 text-muted">Iki gice ni icy’abayobozi ba Gira Perimi gusa.</p>
+          <p className="mt-2 text-muted">Iki gice ni icy’abayobozi ba Tsinda Neza gusa.</p>
           <div className="mt-7">
             <Suspense fallback={<Skeleton className="h-60 rounded-2xl" />}>
               <LoginPanel />

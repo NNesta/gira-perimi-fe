@@ -2,10 +2,14 @@ import { useId } from "react";
 
 import { cn } from "@/lib/cn";
 
-/** Brand mark: a winding road over the hills, with the sun of the Rwandan flag. */
+const ROAD = "M10 25.5 18.6 34c3.2-6.4 8.8-13.3 16.4-19.6";
+
+/** Brand mark: a road that bends into a check mark ("tsinda", pass) and runs up to the sun of the Rwandan flag. */
 export function LogoMark({ className }: { className?: string }) {
   // Unique per instance: a duplicated id inside a hidden copy would blank the visible one's gradient.
-  const gradientId = `gp-logo-${useId()}`;
+  const id = useId();
+  const gradientId = `tn-logo-${id}`;
+  const clipId = `tn-clip-${id}`;
   return (
     <svg viewBox="0 0 48 48" className={cn("size-10", className)} aria-hidden="true">
       <defs>
@@ -13,24 +17,24 @@ export function LogoMark({ className }: { className?: string }) {
           <stop offset="0" stopColor="#129b68" />
           <stop offset="1" stopColor="#0077b8" />
         </linearGradient>
+        <clipPath id={clipId}>
+          <rect width="48" height="48" rx="13" />
+        </clipPath>
       </defs>
-      <rect width="48" height="48" rx="14" fill={`url(#${gradientId})`} />
-      <circle cx="35" cy="13" r="5.5" fill="#fad201" />
-      <path d="M0 33c7-6 14-7 22-4s16 2 26-6v25H0z" fill="#ffffff" opacity="0.16" />
+      <g clipPath={`url(#${clipId})`}>
+        <rect width="48" height="48" fill={`url(#${gradientId})`} />
+        <path d="M0 36c8-5 15-6 23-3s16 2 25-5v20H0z" fill="#ffffff" opacity="0.13" />
+      </g>
+      <circle cx="37" cy="11.2" r="5.4" fill="#fad201" />
+      <path d={ROAD} fill="none" stroke="#ffffff" strokeWidth="7.6" strokeLinecap="round" strokeLinejoin="round" />
       <path
-        d="M17 48c1-7 6-11 11-14s7-7 5-12c-1-3 0-5 3-7"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M17 48c1-7 6-11 11-14s7-7 5-12c-1-3 0-5 3-7"
+        d={ROAD}
         fill="none"
         stroke="#fad201"
-        strokeWidth="1.6"
+        strokeWidth="1.5"
         strokeLinecap="round"
-        strokeDasharray="3 3.2"
+        strokeLinejoin="round"
+        strokeDasharray="2.4 2.7"
       />
     </svg>
   );
@@ -50,7 +54,7 @@ export function Logo({
       <LogoMark className="size-9 shrink-0 drop-shadow-sm" />
       {!compact && (
         <span className={cn("font-display text-xl font-extrabold leading-none tracking-tight", onDark ? "text-white" : "text-ink")}>
-          Gira<span className={onDark ? "text-brand-300" : "text-brand-600 dark:text-brand-400"}>Perimi</span>
+          Tsinda<span className={onDark ? "text-brand-300" : "text-brand-600 dark:text-brand-400"}>Neza</span>
         </span>
       )}
     </span>

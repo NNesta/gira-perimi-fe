@@ -20,12 +20,12 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "Gira Perimi · Iga amategeko y’umuhanda, utsinde ikizamini",
-    template: "%s · Gira Perimi",
+    default: "Tsinda Neza · Iga amategeko y’umuhanda, utsinde ikizamini",
+    template: "%s · Tsinda Neza",
   },
   description: DESCRIPTION,
-  applicationName: "Gira Perimi",
-  appleWebApp: { capable: true, title: "Gira Perimi", statusBarStyle: "default" },
+  applicationName: "Tsinda Neza",
+  appleWebApp: { capable: true, title: "Tsinda Neza", statusBarStyle: "default" },
   keywords: [
     "amategeko y’umuhanda",
     "perimi",
@@ -38,8 +38,8 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "rw_RW",
-    siteName: "Gira Perimi",
-    title: "Gira Perimi · Iga amategeko y’umuhanda, utsinde ikizamini",
+    siteName: "Tsinda Neza",
+    title: "Tsinda Neza · Iga amategeko y’umuhanda, utsinde ikizamini",
     description: DESCRIPTION,
   },
 };

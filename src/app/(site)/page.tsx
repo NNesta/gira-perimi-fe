@@ -126,12 +126,12 @@ const MARQUEE_SIGNS = [
 
 const FAQ = [
   {
-    q: "Gira Perimi ni iki?",
+    q: "Tsinda Neza ni iki?",
     a: "Ni urubuga rugufasha kwiga amategeko y’umuhanda mu Kinyarwanda no kwitegura ikizamini cy’uruhushya rw’agateganyo rwo gutwara ibinyabiziga, ukoresheje amasomo, ibyapa, imyitozo n’ibizamini by’igerageza.",
   },
   {
     q: "Ese ibibazo ni ibyo mu kizamini nyakuri?",
-    a: "Ibibazo biri kuri Gira Perimi byavanywe mu gitabo cy’ibibazo by’ikizamini uko byakabaye, hamwe n’ibisubizo byabyo n’amashusho yabyo. Amasomo ashingiye ku Iteka rya Perezida rigenga uburyo bwo kugenda mu muhanda no ku Itegeko n° 014/2026.",
+    a: "Ibibazo biri kuri Tsinda Neza byavanywe mu gitabo cy’ibibazo by’ikizamini uko byakabaye, hamwe n’ibisubizo byabyo n’amashusho yabyo. Amasomo ashingiye ku Iteka rya Perezida rigenga uburyo bwo kugenda mu muhanda no ku Itegeko n° 014/2026.",
   },
   {
     q: "Ikizamini cy’igerageza giteye gite?",
@@ -227,7 +227,7 @@ export default function HomePage() {
             align="center"
             eyebrow="Uko bikora"
             title="Intambwe enye zikugeza kuri perimi"
-            description="Kuva ku isomo rya mbere kugeza ku munsi w’ikizamini, Gira Perimi iragukurikirana intambwe ku yindi."
+            description="Kuva ku isomo rya mbere kugeza ku munsi w’ikizamini, Tsinda Neza iragukurikirana intambwe ku yindi."
           />
         </Reveal>
         <ol className="relative mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -282,7 +282,7 @@ export default function HomePage() {
         <Reveal>
           <SectionHeading
             align="center"
-            eyebrow="Impamvu Gira Perimi"
+            eyebrow="Impamvu Tsinda Neza"
             title="Byose ukeneye kugira ngo utsinde, ahantu hamwe"
           />
         </Reveal>
@@ -315,7 +315,7 @@ export default function HomePage() {
                 <p className="text-sm font-bold uppercase tracking-[0.14em] text-sun-300">Ikizamini cy’uruhushya rw’agateganyo</p>
                 <h2 className="mt-3 text-3xl font-extrabold leading-tight sm:text-5xl">Menya uko ikizamini giteye mbere y’umunsi nyirizina</h2>
                 <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/75">
-                  Ibizamini by’igerageza bya Gira Perimi bikurikiza imiterere imwe n’iy’ikizamini gikoreshwa na Polisi
+                  Ibizamini by’igerageza bya Tsinda Neza bikurikiza imiterere imwe n’iy’ikizamini gikoreshwa na Polisi
                   y’u Rwanda, kugira ngo ku munsi w’ikizamini nta kintu kigutungura.
                 </p>
                 <ButtonLink href="/ikizamini" variant="sun" size="lg" className="mt-8">

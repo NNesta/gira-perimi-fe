@@ -25,7 +25,7 @@ const COLUMNS = [
   {
     title: "Amakuru",
     links: [
-      { href: "/#uko-bikora", label: "Uko Gira Perimi ikora" },
+      { href: "/#uko-bikora", label: "Uko Tsinda Neza ikora" },
       { href: "/#ibibazo-bikunze-kubazwa", label: "Ibibazo bikunze kubazwa" },
       { href: "/amasomo/itegeko-rishya-2026", label: "Itegeko rishya rya 2026" },
     ],
@@ -63,9 +63,9 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-line">
         <div className="container-page flex flex-col gap-3 py-6 text-sm text-muted md:flex-row md:items-center md:justify-between">
-          <p>© 2026 Gira Perimi. Uburenganzira bwose burasigasiwe.</p>
+          <p>© 2026 Tsinda Neza. Uburenganzira bwose burasigasiwe.</p>
           <p className="max-w-2xl md:text-right">
-            Gira Perimi si urubuga rwa Polisi y’u Rwanda. Ibibazo n’amasomo bishingiye ku gitabo cy’ibibazo
+            Tsinda Neza si urubuga rwa Polisi y’u Rwanda. Ibibazo n’amasomo bishingiye ku gitabo cy’ibibazo
             by’ikizamini, Iteka rya Perezida n° 85/01 n’Itegeko n° 014/2026 rigenga ikoreshwa ry’umuhanda.
           </p>
         </div>
