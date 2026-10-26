@@ -1,0 +1,151 @@
+"use client";
+
+import { LogOut, Save, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import { ThemeSegmented } from "@/components/theme/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
+import { api, errorMessage } from "@/lib/api";
+import { leaveSession } from "@/lib/redirect";
+import type { User } from "@/lib/types";
+
+const CONFIRM_WORD = "SIBA";
+
+export function ProfileForm({ user }: { user: User }) {
+  const router = useRouter();
+  const [phone, setPhone] = useState(user.phone ?? "");
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [confirm, setConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setStatus(null);
+    try {
+      await api("/me", { method: "PATCH", json: { phone: phone.trim() || null } });
+      setStatus({ ok: true, text: "Byabitswe neza." });
+      router.refresh();
+    } catch (e) {
+      setStatus({ ok: false, text: errorMessage(e) });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function logout() {
+    await api("/auth/logout", { method: "POST" }).catch(() => undefined);
+    leaveSession();
+  }
+
+  async function remove() {
+    setDeleting(true);
+    try {
+      await api("/me", { method: "DELETE" });
+      leaveSession();
+    } catch (e) {
+      setStatus({ ok: false, text: errorMessage(e) });
+      setDeleting(false);
+      setDeleteOpen(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={save} className="card space-y-5 p-6 sm:p-8">
+        <div>
+          <h2 className="text-lg font-bold">Amakuru yawe</h2>
+          <p className="mt-1 text-sm text-muted">Izina, imeyili n’ifoto biva kuri konti yawe ya Google.</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="text-sm font-semibold text-muted">Amazina</span>
+            <input value={user.name} readOnly className="mt-1.5 h-11 w-full rounded-xl border border-line bg-surface-2 px-3.5 text-ink-soft" />
+          </label>
+          <label className="block">
+            <span className="text-sm font-semibold text-muted">Imeyili</span>
+            <input value={user.email} readOnly className="mt-1.5 h-11 w-full rounded-xl border border-line bg-surface-2 px-3.5 text-ink-soft" />
+          </label>
+          <label className="block sm:col-span-2">
+            <span className="text-sm font-semibold text-muted">Nimero ya telefone (si ngombwa)</span>
+            <input
+              type="tel"
+              inputMode="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+250 7xx xxx xxx"
+              pattern="^\+?[0-9 ]{9,20}$"
+              className="mt-1.5 h-11 w-full rounded-xl border border-line bg-surface px-3.5 outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-500/15"
+            />
+            <span className="mt-1.5 block text-xs text-muted">Izadufasha kukumenyesha amakuru y’ingenzi, nk’igihe ifatabuguzi rizatangira.</span>
+          </label>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="submit" disabled={saving}>
+            <Save className="size-4" /> {saving ? "Birabikwa..." : "Bika"}
+          </Button>
+          {status && <p className={status.ok ? "text-sm font-semibold text-brand-600" : "text-sm font-semibold text-signal-600"}>{status.text}</p>}
+        </div>
+      </form>
+
+      <div className="card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div>
+          <h2 className="text-lg font-bold">Amabara y’urubuga</h2>
+          <p className="mt-1 text-sm text-muted">Sisitemu ikurikiza igikoresho cyawe; ushobora no guhitamo umucyo cyangwa umwijima.</p>
+        </div>
+        <ThemeSegmented className="shrink-0" />
+      </div>
+
+      <div className="card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div>
+          <h2 className="text-lg font-bold">Sohoka</h2>
+          <p className="mt-1 text-sm text-muted">Ibyo wakoze byose bigumaho; uzongera winjire ukoresheje Gmail.</p>
+        </div>
+        <Button variant="secondary" onClick={logout}>
+          <LogOut className="size-4" /> Sohoka
+        </Button>
+      </div>
+
+      <div className="card flex flex-col gap-4 border-signal-200 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:border-signal-400/30">
+        <div>
+          <h2 className="text-lg font-bold text-signal-700 dark:text-signal-400">Siba konti yanjye</h2>
+          <p className="mt-1 text-sm text-muted">Bisiba burundu konti yawe, ibizamini, imyitozo n’amasomo warangije.</p>
+        </div>
+        <Button variant="danger" onClick={() => setDeleteOpen(true)}>
+          <Trash2 className="size-4" /> Siba konti
+        </Button>
+      </div>
+
+      <Dialog
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Urashaka gusiba konti yawe burundu?"
+        description={
+          <span>
+            Ibi ntibisubirwaho. Andika <strong className="text-ink">{CONFIRM_WORD}</strong> kugira ngo wemeze.
+          </span>
+        }
+        size="sm"
+      >
+        <input
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          aria-label={`Andika ${CONFIRM_WORD}`}
+          className="h-11 w-full rounded-xl border border-line bg-surface px-3.5 outline-none focus:border-signal-400 focus:ring-4 focus:ring-signal-500/15"
+        />
+        <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button variant="secondary" onClick={() => setDeleteOpen(false)}>
+            Reka
+          </Button>
+          <Button variant="danger" disabled={confirm.trim().toUpperCase() !== CONFIRM_WORD || deleting} onClick={remove}>
+            <Trash2 className="size-4" /> {deleting ? "Birasibwa..." : "Siba burundu"}
+          </Button>
+        </div>
+      </Dialog>
+    </div>
+  );
+}
