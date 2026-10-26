@@ -36,9 +36,13 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // /imyitozo/offline is left out on purpose: it needs no session (it practises from the copy saved on the device)
+  // and the service worker must be able to save it before anyone signs in.
   matcher: [
     "/ikibaho/:path*",
-    "/imyitozo/:path*",
+    "/imyitozo",
+    "/imyitozo/kwitoza/:path*",
+    "/isubiramo/:path*",
     "/ikizamini/:id+",
     "/ibizamini/:path*",
     "/umwirondoro/:path*",

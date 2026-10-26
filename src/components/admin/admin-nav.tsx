@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, LogOut, Users } from "lucide-react";
+import { LayoutDashboard, Lightbulb, LogOut, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,6 +11,7 @@ import { leaveSession } from "@/lib/redirect";
 const LINKS = [
   { href: "/admin", label: "Incamake", icon: LayoutDashboard },
   { href: "/admin/abanyeshuri", label: "Abanyeshuri", icon: Users },
+  { href: "/admin/ibisobanuro", label: "Ibisobanuro", icon: Lightbulb },
 ];
 
 export function AdminNavView({ pathname, vertical = true }: { pathname: string; vertical?: boolean }) {
@@ -22,13 +23,16 @@ export function AdminNavView({ pathname, vertical = true }: { pathname: string; 
           <Link
             key={href}
             href={href}
+            title={label}
             aria-current={active ? "page" : undefined}
             className={cn(
               "flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition sm:gap-3 sm:px-3.5 sm:py-2.5",
               active ? "bg-white/12 text-white" : "text-white/65 hover:bg-white/6 hover:text-white",
             )}
           >
-            <Icon className="size-[1.15rem]" /> {label}
+            <Icon className="size-[1.15rem]" aria-hidden />
+            {/* Phones show icons only in the top bar; the label stays for screen readers. */}
+            <span className={vertical ? undefined : "sr-only sm:not-sr-only"}>{label}</span>
           </Link>
         );
       })}
@@ -44,7 +48,7 @@ export function AdminLogoutButton({ compact = false }: { compact?: boolean }) {
   async function logout() {
     await api("/admin/auth/logout", { method: "POST" }).catch(() => undefined);
     // Back to the public site (the admin sign-in page is never linked), dropping every admin page held in memory.
-    leaveSession();
+    await leaveSession();
   }
   if (compact) {
     return (

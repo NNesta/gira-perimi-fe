@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { PracticeSession } from "@/components/practice/practice-session";
 import { Skeleton } from "@/components/ui/skeleton";
 import { learnerFetch } from "@/lib/api-server";
-import type { PracticeMode, Topic } from "@/lib/types";
+import type { PracticeMode, Topic, User } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Kwitoza" };
 
@@ -15,7 +15,10 @@ async function Session({ searchParams }: { searchParams: PageProps<"/imyitozo/kw
   const topic = typeof params.topic === "string" ? params.topic : null;
   const mode = MODES.includes(params.mode as PracticeMode) ? (params.mode as PracticeMode) : "random";
   const count = Math.min(50, Math.max(1, Number(params.count) || 10));
-  const topics = await learnerFetch<Topic[]>("/topics", "/imyitozo");
+  const [topics, user] = await Promise.all([
+    learnerFetch<Topic[]>("/topics", "/imyitozo"),
+    learnerFetch<User>("/auth/me", "/imyitozo"),
+  ]);
   return (
     <PracticeSession
       key={`${topic}-${mode}-${count}`}
@@ -23,6 +26,7 @@ async function Session({ searchParams }: { searchParams: PageProps<"/imyitozo/kw
       mode={mode}
       count={count}
       topics={topics}
+      uid={user.id}
     />
   );
 }

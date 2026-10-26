@@ -3,8 +3,8 @@ import {
   BookOpen,
   ChartLine,
   ClipboardCheck,
-  Flame,
   Play,
+  Repeat,
   Target,
   Trophy,
   type LucideIcon,
@@ -18,26 +18,46 @@ import { ChartTable } from "@/components/charts/chart-table";
 import { ColumnChart } from "@/components/charts/column-chart";
 import { LineTrendChart } from "@/components/charts/line-trend-chart";
 import { ReadinessCard } from "@/components/dashboard/readiness-card";
+import { TodayPlan } from "@/components/dashboard/today-plan";
 import { ExamStartButton } from "@/components/exam/exam-start-button";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { ProgressRing } from "@/components/ui/progress";
 import { PageSkeleton } from "@/components/ui/skeleton";
-import { learnerFetch } from "@/lib/api-server";
+import { learnerFetch, serverFetch } from "@/lib/api-server";
 import { firstName, formatDate, formatDay, formatPercent, formatScore, formatShortDate, greeting, plural, weekdayShort } from "@/lib/format";
-import type { Dashboard, LessonSummary } from "@/lib/types";
+import type { AuthConfig, Dashboard, LessonSummary } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Ikibaho cyanjye" };
 
-function StatTile({ icon: Icon, label, value, sub }: { icon: LucideIcon; label: string; value: string; sub?: string }) {
-  return (
-    <div className="card p-5">
+function StatTile({
+  icon: Icon,
+  label,
+  value,
+  sub,
+  href,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  sub?: string;
+  href?: string;
+}) {
+  const body = (
+    <>
       <p className="flex items-center gap-2 text-sm font-semibold text-muted">
         <Icon className="size-4" /> {label}
       </p>
       <p className="mt-2 text-3xl font-bold">{value}</p>
       {sub && <p className="mt-1 text-xs text-muted">{sub}</p>}
-    </div>
+    </>
+  );
+  return href ? (
+    <Link href={href} className="card block p-5 transition hover:-translate-y-0.5 hover:shadow-lift">
+      {body}
+    </Link>
+  ) : (
+    <div className="card p-5">{body}</div>
   );
 }
 
@@ -57,9 +77,10 @@ function Panel({ title, subtitle, children, action }: { title: string; subtitle?
 }
 
 async function DashboardContent() {
-  const [data, lessons] = await Promise.all([
+  const [data, lessons, config] = await Promise.all([
     learnerFetch<Dashboard>("/me/dashboard", "/ikibaho"),
     learnerFetch<LessonSummary[]>("/lessons", "/ikibaho"),
+    serverFetch<AuthConfig>("/auth/config").catch(() => null),
   ]);
   const { user, readiness, exams, trend, topics } = data;
   const nextLesson = lessons.find((l) => l.slug === data.lessons.next_slug);
@@ -93,17 +114,26 @@ async function DashboardContent() {
         </Link>
       )}
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_1fr]">
+      <div className="mt-8">
+        <TodayPlan data={data} nextLesson={nextLesson} remindersAvailable={!!config?.reminders_available} />
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.05fr_1fr]">
         <ReadinessCard user={user} readiness={readiness} />
         <div className="grid grid-cols-2 gap-4">
           <StatTile icon={ClipboardCheck} label="Ibizamini wakoze" value={String(exams.completed)} sub={`${exams.passed} watsinze`} />
           <StatTile icon={ChartLine} label="Impuzandengo" value={`${formatScore(exams.average)}/20`} sub="Ku bizamini byose" />
           <StatTile icon={Trophy} label="Amanota yo hejuru" value={`${formatScore(exams.best)}/20`} sub={exams.last !== null ? `Aheruka: ${exams.last}/20` : undefined} />
           <StatTile
-            icon={Flame}
-            label="Iminsi ukurikiranya"
-            value={String(data.streak_days)}
-            sub={data.streak_days > 0 ? "Ntucikeho!" : "Witoze uyu munsi"}
+            icon={Repeat}
+            label="Isubiramo"
+            value={String(data.review.due)}
+            sub={
+              data.review.learning + data.review.mastered > 0
+                ? `Biracyigwa ${data.review.learning} · wabimenye ${data.review.mastered}`
+                : "Ibyo wibeshyeho bizagaruka hano"
+            }
+            href="/isubiramo"
           />
           <div className="card col-span-2 flex items-center gap-5 p-5">
             <ProgressRing value={data.lessons.completed} max={data.lessons.total} size={76} stroke={8} label="Amasomo warangije">

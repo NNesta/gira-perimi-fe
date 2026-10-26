@@ -44,6 +44,18 @@ export function formatDateTime(value: string | Date): string {
   return `${formatDate(value)}, saa ${formatTime(value)}`;
 }
 
+/** Today's date in Kigali as "YYYY-MM-DD", optionally shifted by whole days. */
+export function kigaliToday(offsetDays = 0, now: Date = new Date()): string {
+  const d = kigali(new Date(now.getTime() + offsetDays * 86_400_000));
+  return d.toISOString().slice(0, 10);
+}
+
+/** Calendar day "YYYY-MM-DD" → "25 Ugushyingo 2026". */
+export function formatDayLong(day: string): string {
+  const [y, m, d] = day.split("-").map(Number);
+  return `${d} ${MONTHS[m - 1]} ${y}`;
+}
+
 /** Calendar day from the API ("YYYY-MM-DD", already in Kigali time) → "24 Ukw". */
 export function formatDay(day: string): string {
   const [, m, d] = day.split("-").map(Number);

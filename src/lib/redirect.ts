@@ -6,8 +6,10 @@ export function safeNext(next: string | null | undefined, fallback = "/ikibaho")
 /**
  * Leaves a session (sign-out, account deletion) with a full page load instead of a client-side navigation. The client
  * router keeps previous pages alive in memory for back/forward, so on a shared computer the next person could press
- * Back and see the account that just signed out.
+ * Back and see the account that just signed out. Pages saved for offline use are dropped for the same reason.
  */
-export function leaveSession(to = "/") {
+export async function leaveSession(to = "/") {
+  const { clearPersonalCaches } = await import("@/lib/offline");
+  await clearPersonalCaches();
   window.location.replace(to);
 }

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
 
+import { ServiceWorker } from "@/components/pwa/service-worker";
+import { INSTALL_PROMPT_SCRIPT } from "@/lib/pwa";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 import "./globals.css";
@@ -23,6 +25,7 @@ export const metadata: Metadata = {
   },
   description: DESCRIPTION,
   applicationName: "Gira Perimi",
+  appleWebApp: { capable: true, title: "Gira Perimi", statusBarStyle: "default" },
   keywords: [
     "amategeko y’umuhanda",
     "perimi",
@@ -59,8 +62,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         {/* Applies the saved colour theme before the first paint (no flash of the default theme). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {/* Keeps the "install app" prompt for our own button (it can fire before hydration). */}
+        <script dangerouslySetInnerHTML={{ __html: INSTALL_PROMPT_SCRIPT }} />
       </head>
-      <body className="min-h-dvh">{children}</body>
+      <body className="min-h-dvh">
+        {children}
+        <ServiceWorker />
+      </body>
     </html>
   );
 }

@@ -4,6 +4,8 @@ import { LogOut, Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { StudySettingsForm } from "@/components/plan/study-settings-form";
+import { OfflineCard } from "@/components/pwa/offline-card";
 import { ThemeSegmented } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -13,7 +15,7 @@ import type { User } from "@/lib/types";
 
 const CONFIRM_WORD = "SIBA";
 
-export function ProfileForm({ user }: { user: User }) {
+export function ProfileForm({ user, remindersAvailable }: { user: User; remindersAvailable: boolean }) {
   const router = useRouter();
   const [phone, setPhone] = useState(user.phone ?? "");
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
@@ -39,14 +41,14 @@ export function ProfileForm({ user }: { user: User }) {
 
   async function logout() {
     await api("/auth/logout", { method: "POST" }).catch(() => undefined);
-    leaveSession();
+    await leaveSession();
   }
 
   async function remove() {
     setDeleting(true);
     try {
       await api("/me", { method: "DELETE" });
-      leaveSession();
+      await leaveSession();
     } catch (e) {
       setStatus({ ok: false, text: errorMessage(e) });
       setDeleting(false);
@@ -91,6 +93,18 @@ export function ProfileForm({ user }: { user: User }) {
           {status && <p className={status.ok ? "text-sm font-semibold text-brand-600" : "text-sm font-semibold text-signal-600"}>{status.text}</p>}
         </div>
       </form>
+
+      <section className="card space-y-5 p-6 sm:p-8">
+        <div>
+          <h2 className="text-lg font-bold">Gahunda yo kwiga</h2>
+          <p className="mt-1 text-sm text-muted">
+            Itariki y’ikizamini n’intego ya buri munsi bigaragara ku kibaho cyawe nka gahunda y’uyu munsi.
+          </p>
+        </div>
+        <StudySettingsForm user={user} remindersAvailable={remindersAvailable} onSaved={() => router.refresh()} />
+      </section>
+
+      <OfflineCard uid={user.id} />
 
       <div className="card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div>

@@ -32,13 +32,18 @@ npm run build && npm start      # production
 | `/ibyapa` | public | 166 signs and road markings: search, categories, detail view, flashcards |
 | `/ikizamini` | public | Exam rules and the start button |
 | `/injira` | public | Sign in / register with Google (Gmail) |
-| `/ikibaho` | learner | Dashboard: readiness card, averages, score trend, topic mastery, activity |
-| `/imyitozo`, `/imyitozo/kwitoza` | learner | Practice by topic with instant feedback (random, new, mistakes) |
+| `/ikibaho` | learner | Dashboard: exam countdown + today's plan, readiness card, averages, score trend, topic mastery |
+| `/imyitozo`, `/imyitozo/kwitoza` | learner | Practice by topic with instant feedback and explanations (random, new, mistakes); offline download card |
+| `/imyitozo/offline` | anyone | Practice from the copy saved on this device (works with no connection) |
+| `/isubiramo` | learner | Spaced review: due questions and sign flashcards, Leitner boxes |
+| `/nta-interineti` | anyone | Shown by the service worker when a page is not saved and there is no connection |
+| `/reka-kwibutswa` | anyone | One-click unsubscribe from reminder emails (signed link) |
 | `/ikizamini/[id]` | learner | Timed 20-question mock exam, then the graded review |
 | `/ibizamini` | learner | Exam history |
-| `/umwirondoro` | learner | Profile, phone number, sign out, delete account |
+| `/umwirondoro` | learner | Profile, study plan (exam date, daily goal, reminders), offline copy, sign out, delete account |
 | `ADMIN_LOGIN_PATH` | private URL | Admin sign-in (email + password), never linked from the site |
 | `/admin`, `/admin/abanyeshuri`, `/admin/abanyeshuri/[id]` | admin | Platform stats, learners table (search, sort, delete), learner detail |
+| `/admin/ibisobanuro` | admin | Review, approve and edit question explanations; hardest questions first |
 
 `src/proxy.ts` sends visitors without a session cookie from learner pages to `/injira`, and answers 404 for every
 admin URL until an admin signs in; the API still checks every request.
@@ -56,6 +61,28 @@ src/
 ├── lib/               api clients (browser + server), types, Kinyarwanda formatting, icons
 └── proxy.ts           route protection
 ```
+
+## Offline study and the installable app
+
+The site is a Progressive Web App: `src/app/manifest.ts` (name, icons in `public/icons/`, shortcuts) and a service
+worker, `public/sw.js`, registered in production only (`src/components/pwa/service-worker.tsx`).
+
+- **Install**: "Shyira kuri telefone" uses Chrome/Android's install prompt (kept by an inline script in `<head>`), or
+  shows the Share → *Add to Home Screen* steps on iPhone (`src/lib/pwa.ts`).
+- **Save for offline**: "Bika kuri iki gikoresho" (practice page and profile) stores the question bank with answers
+  and explanations, the lesson and practice pages, their scripts and all 311 images — about 5 MB
+  (`src/lib/offline.ts`).
+- **Offline**: page navigations are network-first and fall back to the saved copy; a practice link opened offline
+  redirects to `/imyitozo/offline`; anything not saved redirects to `/nta-interineti`. `/api`, `/admin` and RSC
+  requests are never cached.
+- **Sync**: answers given offline wait in `localStorage` (`gp-outbox`), tagged with the learner's id, and are sent with
+  a `client_id` as soon as that learner is online again (`src/components/pwa/use-offline-sync.ts`), so a shared phone
+  never mixes two learners' answers and a retry never saves twice. A bar under the header shows when the device is
+  offline or answers are waiting.
+- **Sign-out** deletes the saved pages and the question bank, along with the in-memory history.
+
+Cache names live in both `public/sw.js` and `src/lib/offline.ts`; bump them together if the cache format changes.
+`/sw.js` is served with `Cache-Control: no-cache` so updates reach learners on their next visit.
 
 ## Colour theme
 

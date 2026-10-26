@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { api, errorMessage } from "@/lib/api";
 import type { QuestionWithAnswer } from "@/lib/types";
 
+import { Explanation } from "./explanation";
 import { optionStates, QuestionView } from "./question-view";
 
 const COUNT = 5;
@@ -145,6 +146,7 @@ export function DemoQuiz() {
           />
         </motion.div>
       </AnimatePresence>
+      {answered && <Explanation text={question.explanation} lawRef={question.law_ref} compact className="mt-5" />}
       <div className="mt-6 flex min-h-12 items-center justify-between gap-4">
         <AnimatePresence>
           {answered && (

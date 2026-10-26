@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Suspense } from "react";
 
 import { SignsExplorer } from "@/components/signs/signs-explorer";
@@ -14,8 +15,11 @@ export const metadata: Metadata = {
 };
 
 async function Signs() {
-  const data = await serverFetch<{ categories: SignCategory[]; signs: Sign[] }>("/signs");
-  return <SignsExplorer categories={data.categories} signs={data.signs} />;
+  const [data, store] = await Promise.all([
+    serverFetch<{ categories: SignCategory[]; signs: Sign[] }>("/signs"),
+    cookies(),
+  ]);
+  return <SignsExplorer categories={data.categories} signs={data.signs} signedIn={store.has("gp_session")} />;
 }
 
 function SignsSkeleton() {

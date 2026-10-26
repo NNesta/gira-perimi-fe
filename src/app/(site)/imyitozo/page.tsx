@@ -1,10 +1,14 @@
+import { ArrowRight, Repeat } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { PracticeLauncher } from "@/components/practice/practice-launcher";
+import { OfflineCard } from "@/components/pwa/offline-card";
 import { PageHeader } from "@/components/ui/section-heading";
 import { PageSkeleton } from "@/components/ui/skeleton";
 import { learnerFetch } from "@/lib/api-server";
+import { plural } from "@/lib/format";
 import type { Dashboard, Topic } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -17,7 +21,28 @@ async function Launcher() {
     learnerFetch<Topic[]>("/topics", "/imyitozo"),
     learnerFetch<Dashboard>("/me/dashboard", "/imyitozo"),
   ]);
-  return <PracticeLauncher topics={topics} mastery={dashboard.topics} />;
+  const due = dashboard.review.due;
+  return (
+    <div className="space-y-10">
+      {due > 0 && (
+        <Link
+          href="/isubiramo"
+          className="group flex items-center gap-4 rounded-3xl border border-ocean-200 bg-ocean-50 p-5 transition hover:shadow-soft dark:border-ocean-400/25 dark:bg-ocean-500/10"
+        >
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-ocean-500 text-white">
+            <Repeat className="size-6" aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-bold">Isubiramo ry’uyu munsi: {plural(due, "ikintu", "ibintu")}</span>
+            <span className="text-sm text-muted">Ibyo wibeshyeho mbere bigarutse. Bisubiremo mbere y’imyitozo mishya.</span>
+          </span>
+          <ArrowRight className="size-5 shrink-0 transition group-hover:translate-x-1" aria-hidden />
+        </Link>
+      )}
+      <PracticeLauncher topics={topics} mastery={dashboard.topics} />
+      <OfflineCard uid={dashboard.user.id} />
+    </div>
+  );
 }
 
 export default function PracticePage() {

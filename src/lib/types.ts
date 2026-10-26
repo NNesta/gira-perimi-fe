@@ -9,11 +9,16 @@ export type User = {
   phone: string | null;
   plan: string;
   created_at: string;
+  /** "YYYY-MM-DD" (Kigali day) or null. */
+  exam_date: string | null;
+  daily_goal: number;
+  reminders: boolean;
 };
 
 export type AuthConfig = {
   google_client_id: string | null;
   paywall_enabled: boolean;
+  reminders_available: boolean;
 };
 
 export type Option = { text: string; image: string | null };
@@ -27,7 +32,10 @@ export type Question = {
   topic: string;
 };
 
-export type QuestionWithAnswer = Question & { answer: number };
+/** Why the answer is right, and the article of law behind it (null when not written yet). */
+export type Explained = { explanation: string | null; law_ref: string | null };
+
+export type QuestionWithAnswer = Question & Explained & { answer: number };
 
 export type Topic = {
   id: string;
@@ -95,13 +103,14 @@ export type Overview = {
   };
 };
 
-export type ExamItem = Question & {
-  position: number;
-  question_id: number;
-  selected: number | null;
-  answer: number | null;
-  is_correct: boolean | null;
-};
+export type ExamItem = Question &
+  Explained & {
+    position: number;
+    question_id: number;
+    selected: number | null;
+    answer: number | null;
+    is_correct: boolean | null;
+  };
 
 export type Exam = {
   id: string;
@@ -170,6 +179,45 @@ export type TopicMastery = {
   seen: number;
 };
 
+export type ReviewSummary = {
+  due: number;
+  due_questions: number;
+  due_signs: number;
+  learning: number;
+  mastered: number;
+  next_due_at: string | null;
+  /** Items still being learned in Leitner boxes 1–5. */
+  boxes: number[];
+};
+
+export type ReviewItem =
+  | { kind: "question"; box: number; question: QuestionWithAnswer }
+  | { kind: "sign"; box: number; sign: Sign };
+
+export type ReviewSession = { summary: ReviewSummary; items: ReviewItem[] };
+
+export type PlanPace = "none" | "on_track" | "tight" | "today" | "passed";
+
+export type StudyPlan = {
+  exam_date: string | null;
+  days_left: number | null;
+  lessons_left: number;
+  exams_left: number;
+  pace: PlanPace;
+  exam_every_days: number | null;
+  exams_per_day: number | null;
+};
+
+export type Today = {
+  answered: number;
+  goal: number;
+  lesson_done: boolean;
+  exam_done: boolean;
+  exam_suggested: boolean;
+};
+
+export type OfflinePack = { version: string; topics: Topic[]; questions: QuestionWithAnswer[] };
+
 export type Dashboard = {
   user: User;
   readiness: Readiness;
@@ -184,6 +232,9 @@ export type Dashboard = {
   activity: { day: string; answers: number }[];
   recent_exams: ExamSummary[];
   in_progress_exam: string | null;
+  today: Today;
+  plan: StudyPlan;
+  review: ReviewSummary;
 };
 
 export type Admin = { id: string; email: string; name: string; last_login_at: string | null };
@@ -239,4 +290,30 @@ export type AdminUserDetail = {
   lessons_total: number;
   practice_answers: number;
   recent_exams: ExamSummary[];
+  exam_date: string | null;
+  daily_goal: number;
+  streak_days: number;
+  review: ReviewSummary;
+};
+
+export type QuestionFilter = "all" | "missing" | "unreviewed" | "reviewed" | "edited";
+
+export type AdminQuestion = Explained & {
+  id: number;
+  ref: string;
+  text: string;
+  image: string | null;
+  options: Option[];
+  answer: number;
+  topic: string;
+  reviewed: boolean;
+  edited: boolean;
+  updated_at: string | null;
+  updated_by: string | null;
+  answered: number;
+  accuracy: number | null;
+};
+
+export type AdminQuestions = Page<AdminQuestion> & {
+  counts: { total: number; with_explanation: number; reviewed: number; edited: number };
 };

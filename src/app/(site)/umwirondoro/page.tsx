@@ -6,14 +6,17 @@ import { ProfileForm } from "@/components/profile/profile-form";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { learnerFetch } from "@/lib/api-server";
+import { learnerFetch, serverFetch } from "@/lib/api-server";
 import { formatDate } from "@/lib/format";
-import type { User } from "@/lib/types";
+import type { AuthConfig, User } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Umwirondoro" };
 
 async function Profile() {
-  const user = await learnerFetch<User>("/auth/me", "/umwirondoro");
+  const [user, config] = await Promise.all([
+    learnerFetch<User>("/auth/me", "/umwirondoro"),
+    serverFetch<AuthConfig>("/auth/config").catch(() => null),
+  ]);
   return (
     <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
       <aside className="card h-fit p-8 text-center">
@@ -29,7 +32,7 @@ async function Profile() {
           </Badge>
         </div>
       </aside>
-      <ProfileForm user={user} />
+      <ProfileForm user={user} remindersAvailable={!!config?.reminders_available} />
     </div>
   );
 }

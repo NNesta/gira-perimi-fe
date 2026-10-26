@@ -1,14 +1,17 @@
 "use client";
 /* eslint-disable @next/next/no-img-element -- sign scans are served by the API */
 
-import { Check, Grid3x3, Layers, RotateCcw, Search, Shuffle, X } from "lucide-react";
+import { Check, Grid3x3, Layers, Repeat, RotateCcw, Search, Shuffle, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { SignFlipCard } from "@/components/signs/sign-flip-card";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { ProgressBar } from "@/components/ui/progress";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import type { Sign, SignCategory } from "@/lib/types";
 
@@ -39,7 +42,7 @@ function shuffle<T>(items: T[]): T[] {
   return copy;
 }
 
-function Flashcards({ signs, onExit }: { signs: Sign[]; onExit: () => void }) {
+function Flashcards({ signs, signedIn, onExit }: { signs: Sign[]; signedIn: boolean; onExit: () => void }) {
   const [deck, setDeck] = useState(() => shuffle(signs).slice(0, 20));
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -50,6 +53,10 @@ function Flashcards({ signs, onExit }: { signs: Sign[]; onExit: () => void }) {
 
   function answer(knewIt: boolean) {
     if (knewIt) setKnown((k) => k + 1);
+    // Signed-in learners: signs they did not know come back in their spaced review ("Isubiramo").
+    if (signedIn) {
+      api("/review/signs", { method: "POST", json: { sign_id: card.id, known: knewIt } }).catch(() => undefined);
+    }
     setFlipped(false);
     setIndex((i) => i + 1);
   }
@@ -72,6 +79,15 @@ function Flashcards({ signs, onExit }: { signs: Sign[]; onExit: () => void }) {
         <p className="mt-4 text-muted">
           {known / deck.length >= 0.8 ? "Uri intyoza mu byapa! Komereza aho." : "Komeza witoze: buri gusubiramo kugufasha kwibuka."}
         </p>
+        {signedIn && known < deck.length && (
+          <p className="mx-auto mt-3 max-w-sm text-sm text-muted">
+            Ibyapa {deck.length - known} utari uzi byongewe mu{" "}
+            <Link href="/isubiramo" className="font-semibold text-brand-600 hover:underline dark:text-brand-300">
+              isubiramo ryawe
+            </Link>
+            : bizagaruka ejo.
+          </p>
+        )}
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Button onClick={restart}>
             <Shuffle className="size-4" /> Ibindi byapa 20
@@ -92,30 +108,12 @@ function Flashcards({ signs, onExit }: { signs: Sign[]; onExit: () => void }) {
           {index + 1}/{deck.length}
         </span>
       </div>
-      <div className="[perspective:1400px]">
-        <motion.button
-          type="button"
-          onClick={() => setFlipped((f) => !f)}
-          aria-label={flipped ? "Subiza ikarita" : "Garagaza igisobanuro"}
-          className="relative block h-[26rem] w-full [transform-style:preserve-3d]"
-          animate={{ rotateY: flipped ? 180 : 0 }}
-          transition={{ type: "spring", stiffness: 260, damping: 26 }}
-        >
-          <span className="card absolute inset-0 flex flex-col items-center justify-center gap-6 p-8 [backface-visibility:hidden]">
-            <span className="paper flex size-56 items-center justify-center border border-line p-4 shadow-soft">
-              <img src={card.image} alt="Icyapa cyo kumenya" className="max-h-44 max-w-44 object-contain" />
-            </span>
-            <span className="text-sm font-semibold text-muted">Kanda ku ikarita urebe igisobanuro</span>
-          </span>
-          <span className="card absolute inset-0 flex flex-col items-center justify-center gap-4 p-8 text-center [backface-visibility:hidden] [transform:rotateY(180deg)]">
-            <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-bold tracking-wide text-muted">
-              {card.code}
-            </span>
-            <span className="font-display text-2xl font-extrabold sm:text-3xl">{card.name}</span>
-            <span className="max-w-sm leading-relaxed text-muted">{card.description}</span>
-          </span>
-        </motion.button>
-      </div>
+      <SignFlipCard sign={card} flipped={flipped} onFlip={() => setFlipped((f) => !f)} />
+      {signedIn && (
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-muted">
+          <Repeat className="size-3.5 shrink-0" aria-hidden /> Ibyapa utari uzi bizagaruka mu isubiramo ryawe.
+        </p>
+      )}
       <div className="mt-6 grid grid-cols-2 gap-3">
         <Button variant="secondary" size="lg" onClick={() => answer(false)}>
           <X className="size-5 text-signal-500" /> Sinari nkizi
@@ -131,7 +129,16 @@ function Flashcards({ signs, onExit }: { signs: Sign[]; onExit: () => void }) {
   );
 }
 
-export function SignsExplorer({ categories, signs }: { categories: SignCategory[]; signs: Sign[] }) {
+export function SignsExplorer({
+  categories,
+  signs,
+  signedIn = false,
+}: {
+  categories: SignCategory[];
+  signs: Sign[];
+  /** Flashcard results feed the learner's spaced review. */
+  signedIn?: boolean;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -223,7 +230,7 @@ export function SignsExplorer({ categories, signs }: { categories: SignCategory[
       <div className="mt-8">
         {mode === "cards" ? (
           filtered.length > 0 ? (
-            <Flashcards key={`${category}-${query}`} signs={filtered} onExit={() => setMode("grid")} />
+            <Flashcards key={`${category}-${query}`} signs={filtered} signedIn={signedIn} onExit={() => setMode("grid")} />
           ) : null
         ) : (
           <>

@@ -1,17 +1,19 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, BookOpen, CircleCheck, CircleX, History, RotateCcw, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CircleCheck, CircleX, History, RotateCcw, Target, WifiOff } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import { Explanation } from "@/components/quiz/explanation";
 import { optionStates, QuestionView } from "@/components/quiz/question-view";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { ProgressBar, ProgressRing } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api, errorMessage } from "@/lib/api";
 import { cn } from "@/lib/cn";
-import type { PracticeMode, PracticeSet, QuestionWithAnswer, Topic } from "@/lib/types";
+import { loadPack, localPracticeSet, queueAnswer } from "@/lib/offline";
+import type { OfflinePack, PracticeMode, PracticeSet, QuestionWithAnswer, Topic } from "@/lib/types";
 
 const LETTERS = ["a", "b", "c", "d"];
 const MODE_LABELS: Record<PracticeMode, string> = {
@@ -22,16 +24,25 @@ const MODE_LABELS: Record<PracticeMode, string> = {
 
 type Answer = { question: QuestionWithAnswer; selected: number };
 
+/**
+ * Untimed practice with instant feedback and explanations. With `pack` (the copy saved for offline use) it runs
+ * entirely on the device; online, it falls back to that copy when the network drops. Answers that cannot reach the
+ * server wait in the offline outbox and sync later.
+ */
 export function PracticeSession({
   topic,
   mode,
   count,
   topics,
+  uid,
+  pack = null,
 }: {
   topic: string | null;
   mode: PracticeMode;
   count: number;
   topics: Topic[];
+  uid: string;
+  pack?: OfflinePack | null;
 }) {
   const [set, setSet] = useState<PracticeSet | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +50,7 @@ export function PracticeSession({
   const [selected, setSelected] = useState<number | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [onDevice, setOnDevice] = useState(!!pack);
 
   const topicInfo = topics.find((t) => t.id === topic) ?? null;
   const topicName = (id: string) => topics.find((t) => t.id === id)?.name ?? id;
@@ -49,14 +61,29 @@ export function PracticeSession({
     setIndex(0);
     setSelected(null);
     setAnswers([]);
+    const fromDevice = (saved: OfflinePack): PracticeSet => {
+      const questions = localPracticeSet(saved, topic, count);
+      return { topic, mode: "random", available: questions.length, questions };
+    };
+    if (pack) {
+      setSet(fromDevice(pack));
+      return;
+    }
     try {
       const params = new URLSearchParams({ mode, count: String(count) });
       if (topic) params.set("topic", topic);
       setSet(await api<PracticeSet>(`/practice/questions?${params.toString()}`));
+      setOnDevice(false);
     } catch (e) {
-      setError(errorMessage(e));
+      const saved = e instanceof TypeError ? await loadPack() : null;
+      if (saved) {
+        setSet(fromDevice(saved));
+        setOnDevice(true);
+      } else {
+        setError(errorMessage(e));
+      }
     }
-  }, [topic, mode, count]);
+  }, [topic, mode, count, pack]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- loading a fresh random set on mount
@@ -71,11 +98,16 @@ export function PracticeSession({
       if (!question || selected !== null) return;
       setSelected(choice);
       setAnswers((list) => [...list, { question, selected: choice }]);
-      api("/practice/answers", { method: "POST", json: { question_id: question.id, selected: choice } }).catch((e) =>
-        setSaveError(errorMessage(e)),
-      );
+      if (onDevice || !navigator.onLine) {
+        queueAnswer(uid, question.id, choice);
+        return;
+      }
+      api("/practice/answers", { method: "POST", json: { question_id: question.id, selected: choice } }).catch((e) => {
+        if (e instanceof TypeError) queueAnswer(uid, question.id, choice);
+        else setSaveError(errorMessage(e));
+      });
     },
-    [question, selected],
+    [question, selected, onDevice, uid],
   );
 
   const next = useCallback(() => {
@@ -194,6 +226,7 @@ export function PracticeSession({
                     <CircleCheck className="mt-0.5 size-4 shrink-0" /> Igisubizo cy’ukuri: {LETTERS[q.answer]}){" "}
                     {q.options[q.answer]?.text || "(ishusho)"}
                   </p>
+                  <Explanation text={q.explanation} lawRef={q.law_ref} compact className="mt-3" />
                 </li>
               ))}
             </ul>
@@ -215,7 +248,19 @@ export function PracticeSession({
         </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-3 text-sm font-semibold">
-            <span className="truncate">{topicInfo?.name ?? "Ibice byose"} · {MODE_LABELS[mode]}</span>
+            <span className="flex min-w-0 items-center gap-2">
+              {onDevice && (
+                <span
+                  title="Uri kwitoza ukoresheje ibyabitswe kuri iki gikoresho. Ibisubizo bizoherezwa ugarutse kuri interineti."
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-sun-100 px-2 py-0.5 text-xs font-bold text-sun-800 dark:bg-sun-400/15 dark:text-sun-300"
+                >
+                  <WifiOff className="size-3.5" aria-hidden /> Nta interineti
+                </span>
+              )}
+              <span className="truncate">
+                {topicInfo?.name ?? "Ibice byose"} · {MODE_LABELS[onDevice ? "random" : mode]}
+              </span>
+            </span>
             <span className="shrink-0 text-muted">
               {index + 1}/{set.questions.length}
             </span>
@@ -251,32 +296,36 @@ export function PracticeSession({
 
         <AnimatePresence>
           {answered && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={cn(
-                "mt-6 flex flex-col gap-4 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between",
-                isRight ? "bg-brand-50 dark:bg-brand-500/12" : "bg-signal-50 dark:bg-signal-500/10",
-              )}
-            >
-              <div className="flex items-start gap-3">
-                {isRight ? (
-                  <CircleCheck className="mt-0.5 size-6 shrink-0 text-brand-600" />
-                ) : (
-                  <CircleX className="mt-0.5 size-6 shrink-0 text-signal-600" />
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 space-y-3">
+              <div
+                className={cn(
+                  "flex flex-col gap-4 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between",
+                  isRight ? "bg-brand-50 dark:bg-brand-500/12" : "bg-signal-50 dark:bg-signal-500/10",
                 )}
-                <div>
-                  <p className={cn("font-bold", isRight ? "text-brand-700 dark:text-brand-300" : "text-signal-700 dark:text-signal-300")}>
-                    {isRight ? "Ni byo! Komereza aho." : `Si byo. Igisubizo cy’ukuri ni (${LETTERS[question!.answer]}).`}
-                  </p>
-                  {!isRight && lessonSlug && (
-                    <Link href={`/amasomo/${lessonSlug}`} className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft underline-offset-4 hover:underline">
-                      <BookOpen className="size-4" /> Soma isomo bijyanye
-                    </Link>
+              >
+                <div className="flex items-start gap-3">
+                  {isRight ? (
+                    <CircleCheck className="mt-0.5 size-6 shrink-0 text-brand-600" />
+                  ) : (
+                    <CircleX className="mt-0.5 size-6 shrink-0 text-signal-600" />
                   )}
+                  <div>
+                    <p className={cn("font-bold", isRight ? "text-brand-700 dark:text-brand-300" : "text-signal-700 dark:text-signal-300")}>
+                      {isRight ? "Ni byo! Komereza aho." : `Si byo. Igisubizo cy’ukuri ni (${LETTERS[question!.answer]}).`}
+                    </p>
+                    {!isRight && lessonSlug && (
+                      <Link href={`/amasomo/${lessonSlug}`} className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft underline-offset-4 hover:underline">
+                        <BookOpen className="size-4" /> Soma isomo bijyanye
+                      </Link>
+                    )}
+                  </div>
                 </div>
+                <Button onClick={next} className="hidden shrink-0 sm:inline-flex">
+                  {index + 1 >= set.questions.length ? "Reba uko wakoze" : "Ibikurikira"} <ArrowRight className="size-4" />
+                </Button>
               </div>
-              <Button onClick={next} className="shrink-0">
+              <Explanation text={question!.explanation} lawRef={question!.law_ref} />
+              <Button onClick={next} size="lg" className="w-full sm:hidden">
                 {index + 1 >= set.questions.length ? "Reba uko wakoze" : "Ibikurikira"} <ArrowRight className="size-4" />
               </Button>
             </motion.div>

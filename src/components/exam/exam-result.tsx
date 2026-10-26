@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LogoMark } from "@/components/brand/logo";
 import { ThemeMenu } from "@/components/theme/theme-toggle";
 import { ExamStartButton } from "@/components/exam/exam-start-button";
+import { Explanation } from "@/components/quiz/explanation";
 import { optionStates, QuestionView } from "@/components/quiz/question-view";
 import { ButtonLink } from "@/components/ui/button";
 import { ProgressBar, ProgressRing } from "@/components/ui/progress";
@@ -247,6 +248,7 @@ export function ExamResult({ exam, readiness, topics }: { exam: Exam; readiness:
                 {item.selected === null && (
                   <p className="mt-4 text-sm font-semibold text-sun-700 dark:text-sun-300">Iki kibazo ntiwagisubije.</p>
                 )}
+                <Explanation text={item.explanation} lawRef={item.law_ref} compact className="mt-4" />
               </li>
             ))}
           </ol>

@@ -1,10 +1,11 @@
 "use client";
 
-import { ClipboardList, LayoutDashboard, LogOut, UserRound } from "lucide-react";
+import { ClipboardList, LayoutDashboard, LogOut, Repeat, UserRound } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { useOfflineSync } from "@/components/pwa/use-offline-sync";
 import { Avatar } from "@/components/ui/avatar";
 import { api } from "@/lib/api";
 import { leaveSession } from "@/lib/redirect";
@@ -12,6 +13,7 @@ import type { User } from "@/lib/types";
 
 const LINKS = [
   { href: "/ikibaho", label: "Ikibaho cyanjye", icon: LayoutDashboard },
+  { href: "/isubiramo", label: "Isubiramo", icon: Repeat },
   { href: "/ibizamini", label: "Ibizamini nakoze", icon: ClipboardList },
   { href: "/umwirondoro", label: "Umwirondoro", icon: UserRound },
 ];
@@ -20,6 +22,7 @@ export function UserMenu({ user }: { user: User }) {
   const [open, setOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  useOfflineSync(user.id);
 
   useEffect(() => {
     if (!open) return;
@@ -39,7 +42,7 @@ export function UserMenu({ user }: { user: User }) {
   async function logout() {
     setLeaving(true);
     await api("/auth/logout", { method: "POST" }).catch(() => undefined);
-    leaveSession();
+    await leaveSession();
   }
 
   return (

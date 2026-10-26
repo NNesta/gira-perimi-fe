@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress";
 import { PageSkeleton } from "@/components/ui/skeleton";
 import { adminFetch } from "@/lib/api-server";
-import { formatDate, formatDateTime, formatDuration, formatPercent, formatScore, timeAgo } from "@/lib/format";
+import { formatDate, formatDateTime, formatDayLong, formatDuration, formatPercent, formatScore, timeAgo } from "@/lib/format";
 import type { AdminUserDetail } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Umunyeshuri" };
@@ -111,6 +111,22 @@ async function Detail({ params }: { params: PageProps<"/admin/abanyeshuri/[id]">
             <div>
               <dt className="text-muted">Abatsinze mu bizamini</dt>
               <dd className="font-semibold">{formatPercent(user.exams.pass_rate)}</dd>
+            </div>
+            <div>
+              <dt className="text-muted">Itariki y’ikizamini</dt>
+              <dd className="font-semibold">{user.exam_date ? formatDayLong(user.exam_date) : "Ntayo"}</dd>
+            </div>
+            <div>
+              <dt className="text-muted">Intego · iminsi ikurikiranya</dt>
+              <dd className="font-semibold">
+                Ibibazo {user.daily_goal} · {user.streak_days}
+              </dd>
+            </div>
+            <div className="col-span-2">
+              <dt className="text-muted">Isubiramo</dt>
+              <dd className="font-semibold">
+                Bigeze igihe {user.review.due} · biracyigwa {user.review.learning} · yabimenye {user.review.mastered}
+              </dd>
             </div>
           </dl>
         </section>

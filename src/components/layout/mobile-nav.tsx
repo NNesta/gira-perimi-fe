@@ -13,7 +13,11 @@ export function MobileNav() {
 }
 
 export function MobileNavView({ pathname }: { pathname: string }) {
-  const inExam = /^\/ikizamini\/[^/]+/.test(pathname) || pathname.startsWith("/imyitozo/kwitoza");
+  const inExam =
+    /^\/ikizamini\/[^/]+/.test(pathname) ||
+    pathname.startsWith("/imyitozo/kwitoza") ||
+    pathname.startsWith("/imyitozo/offline") ||
+    pathname.startsWith("/isubiramo");
   if (inExam || pathname.startsWith("/injira")) return null;
   return (
     <nav
