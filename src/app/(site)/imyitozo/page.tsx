@@ -1,4 +1,4 @@
-import { ArrowRight, Repeat } from "lucide-react";
+import { ArrowRight, History, Repeat, Search, Split, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -15,6 +15,51 @@ export const metadata: Metadata = {
   title: "Imyitozo",
   description: "Witoze ibibazo by’ikizamini cy’amategeko y’umuhanda ukurikije ibice, urebe ako kanya igisubizo cy’ukuri.",
 };
+
+const TOOLS: { href: "/imyitozo/ninde-utambuka" | "/imyitozo/amakosa" | "/imyitozo/shakisha"; icon: LucideIcon; title: string; text: string; tone: string }[] = [
+  {
+    href: "/imyitozo/ninde-utambuka",
+    icon: Split,
+    title: "Ninde utambuka mbere?",
+    text: "Amasangano 12 ashushanyije: kanda ku gitambuka mbere.",
+    tone: "bg-ocean-500",
+  },
+  {
+    href: "/imyitozo/amakosa",
+    icon: History,
+    title: "Ibyo nibeshyeho",
+    text: "Ibibazo byose wasubije nabi, n’impamvu igisubizo ari cyo.",
+    tone: "bg-signal-500",
+  },
+  {
+    href: "/imyitozo/shakisha",
+    icon: Search,
+    title: "Shakisha ikibazo",
+    text: "Shakisha mu bibazo byose ukoresheje ijambo cyangwa nimero.",
+    tone: "bg-brand-500",
+  },
+];
+
+function Tools() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-3">
+      {TOOLS.map((tool) => (
+        <Link key={tool.href} href={tool.href} className="card group flex items-start gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-lift">
+          <span className={`grid size-11 shrink-0 place-items-center rounded-2xl text-white ${tool.tone}`}>
+            <tool.icon className="size-5" aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center justify-between gap-2 font-bold">
+              {tool.title}
+              <ArrowRight className="size-4 shrink-0 text-muted transition group-hover:translate-x-1" aria-hidden />
+            </span>
+            <span className="mt-1 block text-sm text-muted">{tool.text}</span>
+          </span>
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 async function Launcher() {
   const [topics, dashboard] = await Promise.all([
@@ -39,6 +84,7 @@ async function Launcher() {
           <ArrowRight className="size-5 shrink-0 transition group-hover:translate-x-1" aria-hidden />
         </Link>
       )}
+      <Tools />
       <PracticeLauncher topics={topics} mastery={dashboard.topics} />
       <OfflineCard uid={dashboard.user.id} />
     </div>

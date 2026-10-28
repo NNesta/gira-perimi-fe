@@ -6,12 +6,16 @@ import { SignsExplorer } from "@/components/signs/signs-explorer";
 import { PageHeader } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { serverFetch } from "@/lib/api-server";
+import { pageShare } from "@/lib/site";
 import type { Sign, SignCategory } from "@/lib/types";
+
+const DESCRIPTION =
+  "Ibyapa byose byo ku muhanda mu Rwanda: biburira, bibuza, bitegeka, biyobora, utwapa nyongera n’imirongo yo mu muhanda, n’ibisobanuro byabyo mu Kinyarwanda.";
 
 export const metadata: Metadata = {
   title: "Ibyapa byo ku muhanda",
-  description:
-    "Ibyapa byose byo ku muhanda mu Rwanda: biburira, bibuza, bitegeka, biyobora, utwapa nyongera n’imirongo yo mu muhanda, n’ibisobanuro byabyo mu Kinyarwanda.",
+  description: DESCRIPTION,
+  ...pageShare("Ibyapa byo ku muhanda · Tsinda Neza", DESCRIPTION),
 };
 
 async function Signs() {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/brand/logo";
+import { TextSizeControl } from "@/components/theme/text-size-control";
 import { ThemeSegmented } from "@/components/theme/theme-toggle";
 
 const COLUMNS = [
@@ -36,7 +37,7 @@ export function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-line bg-surface pb-24 lg:pb-0">
       <div className="h-1.5 bg-[linear-gradient(90deg,#00a1de_0_50%,#fad201_50%_75%,#20603d_75%)]" aria-hidden />
-      <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+      <div className="container-page grid grid-cols-[minmax(0,1fr)] gap-10 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div className="max-w-sm">
           <Logo />
           <p className="mt-4 leading-relaxed text-muted">
@@ -45,6 +46,8 @@ export function SiteFooter() {
           </p>
           <p className="mt-6 text-xs font-bold uppercase tracking-[0.12em] text-muted">Amabara y’urubuga</p>
           <ThemeSegmented className="mt-2" />
+          <p className="mt-6 text-xs font-bold uppercase tracking-[0.12em] text-muted">Ingano y’inyandiko</p>
+          <TextSizeControl className="mt-2" />
         </div>
         {COLUMNS.map((column) => (
           <div key={column.title}>

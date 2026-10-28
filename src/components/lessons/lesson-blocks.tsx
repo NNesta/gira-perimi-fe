@@ -3,6 +3,7 @@ import { BookmarkCheck, CircleCheck, Info, Lightbulb, Scale, TriangleAlert } fro
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 
+import { LessonDiagram } from "@/components/lessons/lesson-diagrams";
 import { cn } from "@/lib/cn";
 import type { LessonBlock } from "@/lib/types";
 
@@ -156,6 +157,8 @@ function Block({ block, onDark = false }: { block: LessonBlock; onDark?: boolean
         </aside>
       );
     }
+    case "diagram":
+      return <LessonDiagram name={block.name} />;
     case "signs":
       return (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

@@ -1,10 +1,13 @@
 "use client";
 
 import { RotateCcw, TriangleAlert } from "lucide-react";
+import { useEffect } from "react";
 
 import { Button, ButtonLink } from "@/components/ui/button";
+import { reportError } from "@/lib/report-error";
 
-export default function SiteError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function SiteError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => reportError(error), [error]);
   return (
     <div className="container-page grid min-h-[60vh] place-items-center py-16">
       <div className="card max-w-lg p-10 text-center">

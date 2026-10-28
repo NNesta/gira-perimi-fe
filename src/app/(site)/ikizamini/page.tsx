@@ -8,11 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getSessionUser, serverFetch } from "@/lib/api-server";
 import { formatDate, formatScore } from "@/lib/format";
+import { pageShare } from "@/lib/site";
 import type { Dashboard } from "@/lib/types";
+
+const DESCRIPTION =
+  "Kora ikizamini cy’igerageza cy’amategeko y’umuhanda kimeze nk’icya Polisi: ibibazo 20 mu minota 20, amanota 12 kugira ngo utsinde.";
 
 export const metadata: Metadata = {
   title: "Ikizamini cy’igerageza",
-  description: "Kora ikizamini cy’igerageza cy’amategeko y’umuhanda kimeze nk’icya Polisi: ibibazo 20 mu minota 20, amanota 12 kugira ngo utsinde.",
+  description: DESCRIPTION,
+  ...pageShare("Ikizamini cy’igerageza · Tsinda Neza", DESCRIPTION),
 };
 
 const RULES = [

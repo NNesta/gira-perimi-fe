@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, CalendarClock, Check, ClipboardCheck, Flame, Repeat, Target, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarClock, Check, ClipboardCheck, Flame, Repeat, Target, Trophy, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 import { PlanEditButton } from "@/components/plan/plan-edit-button";
@@ -12,6 +12,7 @@ const PACE: Record<string, { label: string; tone: string }> = {
   tight: { label: "Igihe ni gito: ongera imbaraga", tone: "bg-sun-300 text-asphalt" },
   today: { label: "Ni uyu munsi! Amahirwe masa 🍀", tone: "bg-sun-300 text-asphalt" },
   passed: { label: "Itariki yararenze: shyiraho indi", tone: "bg-white/20 text-white" },
+  succeeded: { label: "Watsinze ikizamini! 🎉", tone: "bg-sun-300 text-asphalt" },
 };
 
 /** "Kora ikizamini 1 buri minsi 2 n’isomo 1 ku munsi": the rhythm that gets the learner ready by the exam date. */
@@ -78,10 +79,12 @@ export function TodayPlan({
   data,
   nextLesson,
   remindersAvailable,
+  pushPublicKey = null,
 }: {
   data: Dashboard;
   nextLesson: LessonSummary | undefined;
   remindersAvailable: boolean;
+  pushPublicKey?: string | null;
 }) {
   const { plan, today, review, user } = data;
   const goalDone = today.answered >= today.goal;
@@ -90,7 +93,7 @@ export function TodayPlan({
 
   return (
     <section aria-label="Gahunda y’uyu munsi" className="card overflow-hidden">
-      <div className="grid lg:grid-cols-[20rem_1fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[20rem_minmax(0,1fr)]">
         <div className="relative overflow-hidden bg-gradient-to-br from-ocean-600 via-ocean-700 to-brand-700 p-6 text-white sm:p-7">
           <div aria-hidden className="bg-grid absolute inset-0 opacity-15" />
           <div aria-hidden className="absolute -bottom-16 -right-10 size-48 rounded-full bg-sun-300/25 blur-2xl" />
@@ -100,16 +103,30 @@ export function TodayPlan({
             </p>
             {plan.exam_date ? (
               <>
-                <p className="mt-4 font-display text-6xl font-extrabold leading-none tabular-nums">
-                  {Math.max(0, plan.days_left ?? 0)}
-                </p>
-                <p className="mt-1 font-semibold text-white/85">
-                  {plan.days_left === 1 ? "umunsi usigaye" : "iminsi isigaye"} · {formatDayLong(plan.exam_date)}
-                </p>
-                {pace && <span className={cn("mt-4 self-start rounded-full px-3 py-1 text-xs font-bold", pace.tone)}>{pace.label}</span>}
+                {plan.pace === "succeeded" ? (
+                  <>
+                    <Trophy className="mt-4 size-14 text-sun-300" aria-hidden />
+                    <p className="mt-3 font-display text-2xl font-extrabold leading-snug">Watsinze!</p>
+                    <p className="mt-1 font-semibold text-white/85">
+                      Ikizamini cyo ku wa {formatDayLong(plan.exam_date)}. Intambwe ikurikira ni ikizamini cyo gutwara.
+                    </p>
+                  </>
+                ) : (plan.days_left ?? 0) < 0 ? (
+                  <p className="mt-4 font-semibold text-white/85">Cyari ku wa {formatDayLong(plan.exam_date)}.</p>
+                ) : (
+                  <>
+                    <p className="mt-4 font-display text-6xl font-extrabold leading-none tabular-nums">{plan.days_left}</p>
+                    <p className="mt-1 font-semibold text-white/85">
+                      {plan.days_left === 1 ? "umunsi usigaye" : "iminsi isigaye"} · {formatDayLong(plan.exam_date)}
+                    </p>
+                  </>
+                )}
+                {pace && plan.pace !== "succeeded" && (
+                  <span className={cn("mt-4 self-start rounded-full px-3 py-1 text-xs font-bold", pace.tone)}>{pace.label}</span>
+                )}
                 {steps && <p className="mt-4 text-sm leading-relaxed text-white/85">{steps}</p>}
                 <div className="mt-auto pt-5">
-                  <PlanEditButton user={user} remindersAvailable={remindersAvailable} />
+                  <PlanEditButton user={user} remindersAvailable={remindersAvailable} pushPublicKey={pushPublicKey} />
                 </div>
               </>
             ) : (
@@ -119,7 +136,12 @@ export function TodayPlan({
                   Shyiraho itariki, tugutegurire gahunda: iminsi isigaye, ibizamini by’igerageza n’amasomo ya buri munsi.
                 </p>
                 <div className="mt-auto pt-5">
-                  <PlanEditButton user={user} remindersAvailable={remindersAvailable} variant="set" />
+                  <PlanEditButton
+                    user={user}
+                    remindersAvailable={remindersAvailable}
+                    pushPublicKey={pushPublicKey}
+                    variant="set"
+                  />
                 </div>
               </>
             )}

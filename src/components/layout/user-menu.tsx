@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, LayoutDashboard, LogOut, Repeat, UserRound } from "lucide-react";
+import { Award, ClipboardList, LayoutDashboard, LogOut, Repeat, UserRound } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -15,6 +15,7 @@ const LINKS = [
   { href: "/ikibaho", label: "Ikibaho cyanjye", icon: LayoutDashboard },
   { href: "/isubiramo", label: "Isubiramo", icon: Repeat },
   { href: "/ibizamini", label: "Ibizamini nakoze", icon: ClipboardList },
+  { href: "/ibihembo", label: "Ibihembo", icon: Award },
   { href: "/umwirondoro", label: "Umwirondoro", icon: UserRound },
 ];
 

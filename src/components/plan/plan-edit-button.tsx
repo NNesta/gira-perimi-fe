@@ -13,10 +13,12 @@ import type { User } from "@/lib/types";
 export function PlanEditButton({
   user,
   remindersAvailable,
+  pushPublicKey = null,
   variant = "edit",
 }: {
   user: Pick<User, "exam_date" | "daily_goal" | "reminders">;
   remindersAvailable: boolean;
+  pushPublicKey?: string | null;
   variant?: "set" | "edit";
 }) {
   const router = useRouter();
@@ -45,6 +47,7 @@ export function PlanEditButton({
         <StudySettingsForm
           user={user}
           remindersAvailable={remindersAvailable}
+          pushPublicKey={pushPublicKey}
           onSaved={() => {
             setOpen(false);
             router.refresh();

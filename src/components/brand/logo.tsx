@@ -53,7 +53,10 @@ export function Logo({
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <LogoMark className="size-9 shrink-0 drop-shadow-sm" />
       {!compact && (
-        <span className={cn("font-display text-xl font-extrabold leading-none tracking-tight", onDark ? "text-white" : "text-ink")}>
+        <span
+          data-wordmark
+          className={cn("font-display text-xl font-extrabold leading-none tracking-tight", onDark ? "text-white" : "text-ink")}
+        >
           Tsinda<span className={onDark ? "text-brand-300" : "text-brand-600 dark:text-brand-400"}>Neza</span>
         </span>
       )}

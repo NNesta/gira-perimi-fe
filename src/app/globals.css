@@ -224,6 +224,22 @@
     -webkit-tap-highlight-color: transparent;
     scroll-behavior: smooth;
   }
+  /* Text size chosen with A− / A+ (src/lib/text-size.ts): everything sized in rem follows. */
+  html[data-text-size="sm"] {
+    font-size: 93.75%;
+  }
+  html[data-text-size="lg"] {
+    font-size: 112.5%;
+  }
+  html[data-text-size="xl"] {
+    font-size: 125%;
+  }
+  /* Largest text on a narrow phone: the header keeps the logo mark only, so its buttons still fit. */
+  @media (max-width: 480px) {
+    html[data-text-size="xl"] header [data-wordmark] {
+      display: none;
+    }
+  }
   body {
     background: var(--bg);
     color: var(--ink);

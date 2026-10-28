@@ -1,4 +1,16 @@
-import { Activity, BadgeCheck, ChartLine, ClipboardCheck, Percent, Target, UserPlus, Users, type LucideIcon } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  BadgeCheck,
+  ChartLine,
+  ClipboardCheck,
+  GraduationCap,
+  Percent,
+  Target,
+  UserPlus,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -57,6 +69,26 @@ async function Overview() {
         <Kpi icon={Target} label="Ibisubizo by’imyitozo" value={String(stats.practice_answers)} />
         <Kpi icon={UserPlus} label="Abiyandikishije (iminsi 30)" value={String(sumSignups)} />
       </div>
+
+      <section className="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+        <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-sun-300 text-asphalt">
+          <GraduationCap className="size-6" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-bold">Ikizamini nyirizina</p>
+          <p className="text-sm text-muted">
+            {stats.outcomes_answered
+              ? `${formatPercent(stats.outcomes_passed / stats.outcomes_answered)} baratsinze · abanyeshuri ${stats.outcomes_answered} batubwiye uko byagenze (${stats.outcomes_passed} baratsinze)`
+              : "Nta munyeshuri uratubwira uko ikizamini cye cyagenze. Bazabazwa nyuma y’itariki y’ikizamini cyabo."}
+          </p>
+        </div>
+        <Link
+          href="/admin/ubuhamya"
+          className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-brand-600 hover:underline dark:text-brand-300"
+        >
+          Ubuhamya{stats.testimonials_pending ? ` (${stats.testimonials_pending} butegereje)` : ""} <ArrowRight className="size-4" />
+        </Link>
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Panel title="Abiyandikisha buri munsi" subtitle={`Iminsi 30 ishize · ${sumSignups} bose`}>

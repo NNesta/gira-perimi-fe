@@ -3,6 +3,7 @@
 import { BellRing, CalendarDays, Save, Target } from "lucide-react";
 import { useId, useState } from "react";
 
+import { PushToggle } from "@/components/plan/push-toggle";
 import { Button } from "@/components/ui/button";
 import { api, errorMessage } from "@/lib/api";
 import { cn } from "@/lib/cn";
@@ -13,14 +14,16 @@ const GOALS = [10, 20, 30, 50];
 
 type Settings = Pick<User, "exam_date" | "daily_goal" | "reminders">;
 
-/** Exam date, daily question goal and (when the site can send email) daily reminders. */
+/** Exam date, daily question goal and daily reminders (email and phone, when the site can send them). */
 export function StudySettingsForm({
   user,
   remindersAvailable,
+  pushPublicKey = null,
   onSaved,
 }: {
   user: Settings;
   remindersAvailable: boolean;
+  pushPublicKey?: string | null;
   onSaved?: (user: User) => void;
 }) {
   const dateId = useId();
@@ -121,6 +124,8 @@ export function StudySettingsForm({
           </span>
         </label>
       )}
+
+      <PushToggle publicKey={pushPublicKey} />
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" disabled={saving}>

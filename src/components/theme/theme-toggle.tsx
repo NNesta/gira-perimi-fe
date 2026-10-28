@@ -36,7 +36,7 @@ export function ThemeSegmented({
       role="radiogroup"
       aria-label="Amabara y’urubuga"
       className={cn(
-        "inline-flex rounded-2xl p-1",
+        "inline-flex max-w-full flex-wrap rounded-2xl p-1",
         onDark ? "bg-white/8 ring-1 ring-white/10" : "bg-surface-2 ring-1 ring-line",
         className,
       )}

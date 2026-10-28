@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Suspense } from "react";
 
+import { RealResults } from "@/components/home/real-results";
 import { HeroScene } from "@/components/illustrations/hero-scene";
 import { DemoQuiz } from "@/components/quiz/demo-quiz";
 import { ButtonLink } from "@/components/ui/button";
@@ -310,7 +311,7 @@ export default function HomePage() {
               className="absolute inset-x-0 bottom-6 h-2 bg-[repeating-linear-gradient(90deg,#fad201_0_44px,transparent_44px_80px)] opacity-30"
             />
             <div aria-hidden className="absolute -right-24 -top-24 size-80 rounded-full bg-brand-500/30 blur-3xl" />
-            <div className="relative grid items-center gap-12 lg:grid-cols-2">
+            <div className="relative grid grid-cols-[minmax(0,1fr)] items-center gap-12 lg:grid-cols-2">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.14em] text-sun-300">Ikizamini cy’uruhushya rw’agateganyo</p>
                 <h2 className="mt-3 text-3xl font-extrabold leading-tight sm:text-5xl">Menya uko ikizamini giteye mbere y’umunsi nyirizina</h2>
@@ -370,6 +371,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ------------------------------------------------------------ real results (only once there are some) */}
+      <Suspense fallback={null}>
+        <RealResults />
+      </Suspense>
 
       {/* ------------------------------------------------------------ FAQ */}
       <section id="ibibazo-bikunze-kubazwa" className="container-page scroll-mt-24">

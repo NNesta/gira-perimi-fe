@@ -40,8 +40,12 @@ export const config = {
   // and the service worker must be able to save it before anyone signs in.
   matcher: [
     "/ikibaho/:path*",
+    "/ikaze",
+    "/ibihembo",
     "/imyitozo",
     "/imyitozo/kwitoza/:path*",
+    "/imyitozo/shakisha",
+    "/imyitozo/amakosa",
     "/isubiramo/:path*",
     "/ikizamini/:id+",
     "/ibizamini/:path*",

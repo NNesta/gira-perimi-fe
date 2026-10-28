@@ -17,15 +17,16 @@ const VARIANTS: Record<Variant, string> = {
   soft: "bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25",
 };
 
+// Minimum heights, not fixed ones: with large text on a small phone a long label wraps instead of overflowing.
 const SIZES: Record<Size, string> = {
-  sm: "h-9 gap-1.5 rounded-xl px-3.5 text-sm",
-  md: "h-11 gap-2 rounded-2xl px-5 text-[0.95rem]",
-  lg: "h-14 gap-2.5 rounded-2xl px-7 text-base sm:text-lg",
+  sm: "min-h-9 gap-1.5 rounded-xl px-3.5 py-1.5 text-sm",
+  md: "min-h-11 gap-2 rounded-2xl px-5 py-2 text-[0.95rem]",
+  lg: "min-h-14 gap-2.5 rounded-2xl px-7 py-3 text-base sm:text-lg",
 };
 
 export function buttonStyles({ variant = "primary", size = "md" }: { variant?: Variant; size?: Size } = {}) {
   return cn(
-    "inline-flex select-none items-center justify-center whitespace-nowrap font-semibold transition-all duration-200",
+    "inline-flex max-w-full select-none items-center justify-center text-center font-semibold leading-tight transition-all duration-200",
     "active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55",
     VARIANTS[variant],
     SIZES[size],

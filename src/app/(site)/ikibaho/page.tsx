@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   Play,
   Repeat,
+  Sparkles,
   Target,
   Trophy,
   type LucideIcon,
@@ -13,10 +14,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { BadgeCelebration } from "@/components/badges/badge-celebration";
+import { BadgesCard } from "@/components/badges/badges-card";
 import { BarList } from "@/components/charts/bar-list";
 import { ChartTable } from "@/components/charts/chart-table";
 import { ColumnChart } from "@/components/charts/column-chart";
 import { LineTrendChart } from "@/components/charts/line-trend-chart";
+import { OutcomeQuestion } from "@/components/dashboard/outcome-question";
 import { ReadinessCard } from "@/components/dashboard/readiness-card";
 import { TodayPlan } from "@/components/dashboard/today-plan";
 import { ExamStartButton } from "@/components/exam/exam-start-button";
@@ -26,7 +30,7 @@ import { ProgressRing } from "@/components/ui/progress";
 import { PageSkeleton } from "@/components/ui/skeleton";
 import { learnerFetch, serverFetch } from "@/lib/api-server";
 import { firstName, formatDate, formatDay, formatPercent, formatScore, formatShortDate, greeting, plural, weekdayShort } from "@/lib/format";
-import type { AuthConfig, Dashboard, LessonSummary } from "@/lib/types";
+import type { AuthConfig, Badges, Dashboard, LessonSummary } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Ikibaho cyanjye" };
 
@@ -77,10 +81,12 @@ function Panel({ title, subtitle, children, action }: { title: string; subtitle?
 }
 
 async function DashboardContent() {
-  const [data, lessons, config] = await Promise.all([
+  const [data, lessons, config, badges] = await Promise.all([
     learnerFetch<Dashboard>("/me/dashboard", "/ikibaho"),
     learnerFetch<LessonSummary[]>("/lessons", "/ikibaho"),
     serverFetch<AuthConfig>("/auth/config").catch(() => null),
+    // Optional card: if badges fail to load, the rest of the dashboard still shows.
+    serverFetch<Badges>("/me/badges").catch(() => null),
   ]);
   const { user, readiness, exams, trend, topics } = data;
   const nextLesson = lessons.find((l) => l.slug === data.lessons.next_slug);
@@ -114,9 +120,52 @@ async function DashboardContent() {
         </Link>
       )}
 
+      {!user.onboarded && (
+        <Link
+          href="/ikaze"
+          className="mt-6 flex items-center gap-4 rounded-3xl border border-brand-200 bg-brand-50 p-5 transition hover:shadow-soft dark:border-brand-400/25 dark:bg-brand-500/10"
+        >
+          <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-500 text-white">
+            <Sparkles className="size-5" />
+          </span>
+          <span className="flex-1">
+            <span className="block font-bold">Tangira hano: intambwe 3 ngufi</span>
+            <span className="text-sm text-muted">
+              Itariki y’ikizamini, intego ya buri munsi n’ibibazo 10 byerekana aho uhagaze.
+            </span>
+          </span>
+          <ArrowRight className="size-5" />
+        </Link>
+      )}
+
+      {data.outcome_question && (
+        <div className="mt-6">
+          <OutcomeQuestion
+            examDate={data.outcome_question}
+            user={user}
+            remindersAvailable={!!config?.reminders_available}
+            pushPublicKey={config?.push_public_key ?? null}
+          />
+        </div>
+      )}
+
       <div className="mt-8">
-        <TodayPlan data={data} nextLesson={nextLesson} remindersAvailable={!!config?.reminders_available} />
+        <TodayPlan
+          data={data}
+          nextLesson={nextLesson}
+          remindersAvailable={!!config?.reminders_available}
+          pushPublicKey={config?.push_public_key ?? null}
+        />
       </div>
+
+      {badges && (
+        <>
+          <div className="mt-6">
+            <BadgesCard badges={badges} />
+          </div>
+          <BadgeCelebration uid={user.id} badges={badges.items} />
+        </>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.05fr_1fr]">
         <ReadinessCard user={user} readiness={readiness} />

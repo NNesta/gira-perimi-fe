@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, BookOpen, ChevronRight, Clock, FileText, Lock, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, ChevronRight, Clock, FileText, Lock, Split, Target } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -11,13 +11,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getSessionUser, serverFetch, ServerApiError } from "@/lib/api-server";
 import { plural } from "@/lib/format";
 import { DynamicIcon } from "@/lib/icons";
+import { pageShare } from "@/lib/site";
 import type { Lesson } from "@/lib/types";
 
 export async function generateMetadata({ params }: PageProps<"/amasomo/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   try {
     const lesson = await serverFetch<Lesson>(`/lessons/${slug}`);
-    return { title: lesson.title, description: lesson.summary };
+    return { title: lesson.title, description: lesson.summary, ...pageShare(`${lesson.title} · Tsinda Neza`, lesson.summary) };
   } catch {
     return { title: "Isomo" };
   }
@@ -120,6 +121,11 @@ async function LessonContent({ params }: { params: PageProps<"/amasomo/[slug]">[
             <p className="mt-2 text-muted">Bika aho ugeze, hanyuma usubize ibibazo by’ikizamini bijyanye n’iri somo.</p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <LessonCompleteButton slug={lesson.slug} completed={lesson.completed} signedIn={!!user} />
+              {lesson.topics.includes("gutambuka-mbere") && (
+                <ButtonLink href="/imyitozo/ninde-utambuka" variant="secondary" size="lg">
+                  <Split className="size-5" /> Ninde utambuka mbere?
+                </ButtonLink>
+              )}
               {practiceTopic && lesson.question_count > 0 && (
                 <ButtonLink href={`/imyitozo/kwitoza?topic=${practiceTopic}&count=10`} variant="secondary" size="lg">
                   <Target className="size-5" /> Witoze ibibazo 10

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LogoMark } from "@/components/brand/logo";
 import { ThemeMenu } from "@/components/theme/theme-toggle";
 import { ExamStartButton } from "@/components/exam/exam-start-button";
+import { ShareResult } from "@/components/exam/share-result";
 import { Explanation } from "@/components/quiz/explanation";
 import { optionStates, QuestionView } from "@/components/quiz/question-view";
 import { ButtonLink } from "@/components/ui/button";
@@ -148,6 +149,8 @@ export function ExamResult({ exam, readiness, topics }: { exam: Exam; readiness:
             </div>
           </div>
         </section>
+
+        {passed && <ShareResult examId={exam.id} score={score} total={exam.total} className="mt-6" />}
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_22rem]">
           <section className="card p-6 sm:p-8">

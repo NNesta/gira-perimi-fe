@@ -15,7 +15,15 @@ import type { User } from "@/lib/types";
 
 const CONFIRM_WORD = "SIBA";
 
-export function ProfileForm({ user, remindersAvailable }: { user: User; remindersAvailable: boolean }) {
+export function ProfileForm({
+  user,
+  remindersAvailable,
+  pushPublicKey = null,
+}: {
+  user: User;
+  remindersAvailable: boolean;
+  pushPublicKey?: string | null;
+}) {
   const router = useRouter();
   const [phone, setPhone] = useState(user.phone ?? "");
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
@@ -101,7 +109,12 @@ export function ProfileForm({ user, remindersAvailable }: { user: User; reminder
             Itariki y’ikizamini n’intego ya buri munsi bigaragara ku kibaho cyawe nka gahunda y’uyu munsi.
           </p>
         </div>
-        <StudySettingsForm user={user} remindersAvailable={remindersAvailable} onSaved={() => router.refresh()} />
+        <StudySettingsForm
+          user={user}
+          remindersAvailable={remindersAvailable}
+          pushPublicKey={pushPublicKey}
+          onSaved={() => router.refresh()}
+        />
       </section>
 
       <OfflineCard uid={user.id} />

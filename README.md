@@ -35,9 +35,16 @@ npm run build && npm start      # production
 | `/ikibaho` | learner | Dashboard: exam countdown + today's plan, readiness card, averages, score trend, topic mastery |
 | `/imyitozo`, `/imyitozo/kwitoza` | learner | Practice by topic with instant feedback and explanations (random, new, mistakes); offline download card |
 | `/imyitozo/offline` | anyone | Practice from the copy saved on this device (works with no connection) |
+| `/imyitozo/ninde-utambuka` | anyone | "Ninde utambuka mbere?": 12 drawn intersections, tap who goes first, watch them drive off |
+| `/imyitozo/shakisha` | learner | Search the whole question bank (words or booklet number), matches highlighted |
+| `/admin/ubuhamya` | admin | Testimonials from learners who passed the real exam: approve or hide |
+| `/ibihembo` | learner | Achievement badges: earned ones in colour, the rest with their progress |
+| `/natsinze/[code]` | anyone | A result card someone shared ("Nabonye 19/20"); its link preview is the card (`ifoto`) |
+| `/imyitozo/amakosa` | learner | Every question answered wrongly, by topic and status, with the learner's choice and the explanation |
 | `/isubiramo` | learner | Spaced review: due questions and sign flashcards, Leitner boxes |
 | `/nta-interineti` | anyone | Shown by the service worker when a page is not saved and there is no connection |
 | `/reka-kwibutswa` | anyone | One-click unsubscribe from reminder emails (signed link) |
+| `/ikaze` | learner | First-time welcome: exam date, daily goal, 10-question placement quiz (one per topic) |
 | `/ikizamini/[id]` | learner | Timed 20-question mock exam, then the graded review |
 | `/ibizamini` | learner | Exam history |
 | `/umwirondoro` | learner | Profile, study plan (exam date, daily goal, reminders), offline copy, sign out, delete account |
@@ -46,7 +53,19 @@ npm run build && npm start      # production
 | `/admin/ibisobanuro` | admin | Review, approve and edit question explanations; hardest questions first |
 
 `src/proxy.ts` sends visitors without a session cookie from learner pages to `/injira`, and answers 404 for every
-admin URL until an admin signs in; the API still checks every request.
+admin URL until an admin signs in; the API still checks every request. New learners go from sign-in to `/ikaze`;
+the dashboard links back to it until they finish or skip it.
+
+### Search engines and link previews
+
+- `src/app/opengraph-image.tsx` draws the picture shown when a link is shared (WhatsApp, Facebook, X). It is built
+  once at build time, with the brand fonts in `src/assets/fonts` (SIL Open Font License, see the `OFL-*.txt` files).
+- `src/app/sitemap.ts` (`/sitemap.xml`) lists the public pages and every lesson; `src/app/robots.ts` keeps the
+  signed-in pages out of search results.
+- Both, and the absolute picture URL, use `SITE_URL`: set it to the public address **before building**.
+- To appear on Google sooner: add the site in [Google Search Console](https://search.google.com/search-console),
+  choose the *HTML tag* method, put the code in `GOOGLE_SITE_VERIFICATION`, rebuild, verify, then submit
+  `https://<your domain>/sitemap.xml` under *Sitemaps*.
 
 ## Structure
 
@@ -79,7 +98,38 @@ worker, `public/sw.js`, registered in production only (`src/components/pwa/servi
   a `client_id` as soon as that learner is online again (`src/components/pwa/use-offline-sync.ts`), so a shared phone
   never mixes two learners' answers and a retry never saves twice. A bar under the header shows when the device is
   offline or answers are waiting.
-- **Sign-out** deletes the saved pages and the question bank, along with the in-memory history.
+- **Sign-out** deletes the saved pages and the question bank, along with the in-memory history, and switches off
+  phone notifications on that device.
+- **Phone notifications**: "Nyibutsa kuri telefoni" (`src/components/plan/push-toggle.tsx`, `src/lib/push.ts`)
+  subscribes the browser with the API's VAPID key from `GET /auth/config`; `public/sw.js` shows the reminder and
+  opens the dashboard when tapped. On iPhone it asks the learner to install the app first (iOS 16.4+). Hidden when the
+  API has no keys.
+
+**"Watsinze ikizamini?"**: after the exam date the dashboard asks how it went
+(`src/components/dashboard/outcome-question.tsx`); the plan card then congratulates instead of counting down. The home
+page shows the reported pass rate and approved testimonials (`src/components/home/real-results.tsx`) only once the API
+has enough answers.
+
+**Error alerts**: set `SENTRY_DSN` (server: errors while rendering, via `src/instrumentation.ts`) and
+`NEXT_PUBLIC_SENTRY_DSN` at build time (browser: `src/instrumentation-client.ts` and the error pages). Without them no
+Sentry code is downloaded. Cookies, headers, bodies, query strings and user details are never sent
+(`src/lib/sentry-privacy.ts`).
+
+**Badges** (`src/components/badges/`): the dashboard card, the `/ibihembo` page, and a celebration with confetti the
+first time this browser sees a newly earned badge (on the dashboard and after an exam).
+
+**Sharing a result**: a passed exam shows "Sangiza abandi" (`src/components/exam/share-result.tsx`): the card image,
+a WhatsApp button (`wa.me` with the text and the `/natsinze/<code>` link), the phone's share sheet with the image, or a
+download. The card is drawn by `src/app/(site)/natsinze/[code]/ifoto/route.tsx` with `next/og`.
+
+**Text size** (`src/lib/text-size.ts`): A− / A+ in the footer and the profile scales the root font size (93.75–125%),
+saved per browser and applied before the first paint. Buttons may wrap at large sizes instead of overflowing.
+
+**Lesson drawings** (`src/components/lessons/lesson-diagrams.tsx`) render `::diagram` blocks: lane markings,
+overtaking, stopping distances (a worked example, labelled as such) and where not to park.
+
+The right-of-way scenes are data (`src/lib/scenarios.ts`: vehicles, signs, lights, answer, explanation, article)
+drawn by `src/components/scenarios/intersection.tsx`; every approach is drawn as the south one and rotated.
 
 Cache names live in both `public/sw.js` and `src/lib/offline.ts`; bump them together if the cache format changes.
 `/sw.js` is served with `Cache-Control: no-cache` so updates reach learners on their next visit.

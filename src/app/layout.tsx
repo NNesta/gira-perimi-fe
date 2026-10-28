@@ -3,6 +3,8 @@ import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
 
 import { ServiceWorker } from "@/components/pwa/service-worker";
 import { INSTALL_PROMPT_SCRIPT } from "@/lib/pwa";
+import { SITE_URL } from "@/lib/site";
+import { TEXT_SIZE_INIT_SCRIPT } from "@/lib/text-size";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 import "./globals.css";
@@ -18,7 +20,7 @@ const DESCRIPTION =
   "Iga amategeko y’umuhanda mu Kinyarwanda: amasomo asobanutse, ibyapa byo ku muhanda, n’ibibazo by’ikizamini cy’uruhushya rw’agateganyo. Witoze nk’uko bigenda kwa Polisi: ibibazo 20 mu minota 20.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Tsinda Neza · Iga amategeko y’umuhanda, utsinde ikizamini",
     template: "%s · Tsinda Neza",
@@ -42,6 +44,10 @@ export const metadata: Metadata = {
     title: "Tsinda Neza · Iga amategeko y’umuhanda, utsinde ikizamini",
     description: DESCRIPTION,
   },
+  // The picture itself is app/opengraph-image.tsx; X reads it from the Open Graph tags.
+  twitter: { card: "summary_large_image" },
+  // Google Search Console ownership check (the "HTML tag" method), when set.
+  verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
 };
 
 export const viewport: Viewport = {
@@ -62,6 +68,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         {/* Applies the saved colour theme before the first paint (no flash of the default theme). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: TEXT_SIZE_INIT_SCRIPT }} />
         {/* Keeps the "install app" prompt for our own button (it can fire before hydration). */}
         <script dangerouslySetInnerHTML={{ __html: INSTALL_PROMPT_SCRIPT }} />
       </head>

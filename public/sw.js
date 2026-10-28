@@ -6,6 +6,7 @@
 //   anything else not saved     redirected to /nta-interineti (a redirect, not that page under another address,
 //                               so the page hydrates with its own URL)
 //   /api, /admin, RSC requests  never cached
+//   push                        shows the daily reminder sent by the API; a tap opens the page it names
 //
 // Cache names are shared with src/lib/offline.ts: keep them in sync.
 
@@ -110,4 +111,38 @@ self.addEventListener("fetch", (event) => {
   } else if (request.mode === "navigate") {
     event.respondWith(page(request, url));
   }
+});
+
+self.addEventListener("push", (event) => {
+  let message = {};
+  try {
+    message = event.data ? event.data.json() : {};
+  } catch {
+    message = { body: event.data ? event.data.text() : "" };
+  }
+  event.waitUntil(
+    self.registration.showNotification(message.title || "Tsinda Neza", {
+      body: message.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/badge-96.png",
+      tag: message.tag || "tsinda-neza",
+      lang: "rw",
+      data: { url: message.url || "/ikibaho" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || "/ikibaho", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (windows) => {
+      const open = windows.find((client) => client.url.startsWith(self.location.origin));
+      if (open) {
+        const focused = await open.focus();
+        return focused.navigate(url).catch(() => self.clients.openWindow(url));
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
 });

@@ -2,10 +2,11 @@ import { LoaderCircle } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { BadgeCelebration } from "@/components/badges/badge-celebration";
 import { ExamResult } from "@/components/exam/exam-result";
 import { ExamRunner } from "@/components/exam/exam-runner";
 import { learnerFetch } from "@/lib/api-server";
-import type { Dashboard, Exam, Topic } from "@/lib/types";
+import type { Badges, Dashboard, Exam, Topic } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Ikizamini", robots: { index: false } };
 
@@ -14,11 +15,17 @@ async function ExamScreen({ params }: { params: PageProps<"/ikizamini/[id]">["pa
   const path = `/ikizamini/${id}`;
   const exam = await learnerFetch<Exam>(`/exams/${encodeURIComponent(id)}`, path);
   if (exam.status === "in_progress") return <ExamRunner key={exam.id} exam={exam} />;
-  const [dashboard, topics] = await Promise.all([
+  const [dashboard, topics, badges] = await Promise.all([
     learnerFetch<Dashboard>("/me/dashboard", path),
     learnerFetch<Topic[]>("/topics", path),
+    learnerFetch<Badges>("/me/badges", path),
   ]);
-  return <ExamResult exam={exam} readiness={dashboard.readiness} topics={topics} />;
+  return (
+    <>
+      <ExamResult exam={exam} readiness={dashboard.readiness} topics={topics} />
+      <BadgeCelebration uid={dashboard.user.id} badges={badges.items} delayMs={3200} />
+    </>
+  );
 }
 
 export default function ExamPage({ params }: PageProps<"/ikizamini/[id]">) {

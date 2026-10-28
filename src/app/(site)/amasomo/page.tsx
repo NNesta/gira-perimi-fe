@@ -10,11 +10,16 @@ import { getSessionUser, serverFetch } from "@/lib/api-server";
 import { cn } from "@/lib/cn";
 import { plural } from "@/lib/format";
 import { DynamicIcon } from "@/lib/icons";
+import { pageShare } from "@/lib/site";
 import type { LessonSummary } from "@/lib/types";
+
+const DESCRIPTION =
+  "Amasomo 16 y’amategeko y’umuhanda mu Kinyarwanda, ashingiye ku iteka rigenga umuhanda n’itegeko rishya rya 2026.";
 
 export const metadata: Metadata = {
   title: "Amasomo",
-  description: "Amasomo 16 y’amategeko y’umuhanda mu Kinyarwanda, ashingiye ku iteka rigenga umuhanda n’itegeko rishya rya 2026.",
+  description: DESCRIPTION,
+  ...pageShare("Amasomo y’amategeko y’umuhanda · Tsinda Neza", DESCRIPTION),
 };
 
 const ACCENTS = [
