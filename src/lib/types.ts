@@ -15,6 +15,8 @@ export type User = {
   reminders: boolean;
   /** False until the learner finishes or skips the first-time welcome (/ikaze). */
   onboarded: boolean;
+  /** Has signed in with Google: name and photo come from Google. False for accounts opened with an email link. */
+  google_account: boolean;
 };
 
 /** POST /practice/placement: the welcome quiz, saved in one go. */
@@ -22,6 +24,8 @@ export type PlacementResult = { correct: number; total: number; weak_topics: str
 
 export type AuthConfig = {
   google_client_id: string | null;
+  /** Sign-in links by email are offered (the server can send email). */
+  email_login: boolean;
   paywall_enabled: boolean;
   reminders_available: boolean;
   /** VAPID public key for phone notifications; null when they are switched off on the server. */
@@ -136,6 +140,7 @@ export type Overview = {
     pass_mark: number;
     readiness_min_exams: number;
     readiness_min_average: number;
+    readiness_recent_exams: number;
   };
 };
 
@@ -194,6 +199,8 @@ export type Readiness = {
   exams_remaining: number;
   average: number | null;
   average_required: number;
+  /** `average` is over this many most recent exams; abandoned exams are left out of both counts. */
+  average_window: number;
 };
 
 export type ExamStats = {

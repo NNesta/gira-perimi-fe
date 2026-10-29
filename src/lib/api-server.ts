@@ -2,6 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import { cache } from "react";
 
 import type { Admin, User } from "@/lib/types";
 
@@ -60,7 +61,8 @@ export async function adminFetch<T>(path: string): Promise<T> {
   }
 }
 
-export async function getSessionUser(): Promise<User | null> {
+/** The signed-in learner, or null. Memoised per request: the header and the page often both ask. */
+export const getSessionUser = cache(async (): Promise<User | null> => {
   const store = await cookies();
   if (!store.has("gp_session")) return null;
   try {
@@ -68,7 +70,7 @@ export async function getSessionUser(): Promise<User | null> {
   } catch {
     return null;
   }
-}
+});
 
 export async function getSessionAdmin(): Promise<Admin | null> {
   const store = await cookies();

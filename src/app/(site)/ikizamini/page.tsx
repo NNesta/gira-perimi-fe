@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getSessionUser, serverFetch } from "@/lib/api-server";
 import { formatDate, formatScore } from "@/lib/format";
+import { getOverview } from "@/lib/overview";
 import { pageShare } from "@/lib/site";
-import type { Dashboard } from "@/lib/types";
+import type { Dashboard, Overview } from "@/lib/types";
 
 const DESCRIPTION =
   "Kora ikizamini cy’igerageza cy’amategeko y’umuhanda kimeze nk’icya Polisi: ibibazo 20 mu minota 20, amanota 12 kugira ngo utsinde.";
@@ -20,10 +21,22 @@ export const metadata: Metadata = {
   ...pageShare("Ikizamini cy’igerageza · Tsinda Neza", DESCRIPTION),
 };
 
-const RULES = [
-  { icon: ListChecks, title: "Ibibazo 20", text: "Bitoranywa ku buryo butunguranye mu bibazo 399 by’ikizamini nyirizina." },
-  { icon: Clock, title: "Iminota 20", text: "Isaha itangira kubara ukimara gutangira. Igihe kirangiye, ikizamini kirifunga." },
-  { icon: Target, title: "Nibura 12/20", text: "Ugomba gusubiza neza nibura ibibazo 12 (60%) kugira ngo utsinde." },
+const rules = ({ questions, exam }: Overview) => [
+  {
+    icon: ListChecks,
+    title: `Ibibazo ${exam.question_count}`,
+    text: `Bitoranywa ku buryo butunguranye mu bibazo ${questions} by’ikizamini nyirizina.`,
+  },
+  {
+    icon: Clock,
+    title: `Iminota ${exam.duration_minutes}`,
+    text: "Isaha itangira kubara ukimara gutangira. Igihe kirangiye, ikizamini kirifunga.",
+  },
+  {
+    icon: Target,
+    title: `Nibura ${exam.pass_mark}/${exam.question_count}`,
+    text: `Ugomba gusubiza neza nibura ibibazo ${exam.pass_mark} (${Math.round((exam.pass_mark / exam.question_count) * 100)}%) kugira ngo utsinde.`,
+  },
   { icon: Lock, title: "Nta gufasha", text: "Ibisubizo by’ukuri ubibona ikizamini kirangiye, nk’uko bigenda kwa Polisi." },
 ];
 
@@ -79,7 +92,9 @@ async function StartPanel() {
   );
 }
 
-export default function ExamIntroPage() {
+export default async function ExamIntroPage() {
+  const overview = await getOverview();
+  const { exam } = overview;
   return (
     <section className="relative overflow-hidden">
       <div aria-hidden className="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black_25%,transparent_70%)]" />
@@ -89,10 +104,10 @@ export default function ExamIntroPage() {
           <h1 className="mt-3 text-4xl font-extrabold leading-tight sm:text-5xl">Isuzume nk’uri kwa Polisi</h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
             Ikizamini cy’igerageza gikurikiza imiterere y’ikizamini cy’uruhushya rw’agateganyo. Gikore inshuro nyinshi
-            kugeza amanota yawe ahamye hejuru ya 15/20.
+            kugeza amanota yawe ahamye hejuru ya {formatScore(exam.readiness_min_average)}/20.
           </p>
           <ul className="mt-10 grid gap-4 sm:grid-cols-2">
-            {RULES.map(({ icon: Icon, title, text }) => (
+            {rules(overview).map(({ icon: Icon, title, text }) => (
               <li key={title} className="card flex gap-4 p-5">
                 <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-asphalt text-sun-300 dark:bg-white/10">
                   <Icon className="size-6" />
@@ -107,9 +122,10 @@ export default function ExamIntroPage() {
           <div className="mt-6 flex items-start gap-3 rounded-3xl border border-brand-200 bg-brand-50/70 p-5 dark:border-brand-400/25 dark:bg-brand-500/10">
             <Trophy className="mt-0.5 size-6 shrink-0 text-brand-600" />
             <p className="leading-relaxed text-ink-soft">
-              <strong className="text-ink">Igihe witeguye:</strong> iyo umaze gukora ibizamini by’igerageza birenga 10
-              kandi impuzandengo yawe ikarenga 15/20, ikibaho cyawe kikubwira ko ushobora kujya kwiyandikisha ku
-              kizamini nyirizina.
+              <strong className="text-ink">Igihe witeguye:</strong> iyo umaze gukora ibizamini by’igerageza birenga{" "}
+              {exam.readiness_min_exams} kandi impuzandengo y’ibizamini {exam.readiness_recent_exams} biheruka
+              ikarenga {formatScore(exam.readiness_min_average)}/20, ikibaho cyawe kikubwira ko ushobora kujya
+              kwiyandikisha ku kizamini nyirizina.
             </p>
           </div>
         </div>

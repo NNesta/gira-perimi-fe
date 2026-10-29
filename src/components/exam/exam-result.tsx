@@ -159,8 +159,9 @@ export function ExamResult({ exam, readiness, topics }: { exam: Exam; readiness:
               <div className="mt-4">
                 <p className="font-display text-2xl font-extrabold text-brand-600 dark:text-brand-300">Witeguye gukora ikizamini! 🚦</p>
                 <p className="mt-2 text-muted">
-                  Umaze gukora ibizamini {readiness.exams_completed} ufite impuzandengo ya {formatScore(readiness.average)}/20.
-                  Iyandikishe ku kizamini cy’uruhushya rw’agateganyo.
+                  Umaze gukora ibizamini {readiness.exams_completed}, kandi impuzandengo y’ibizamini{" "}
+                  {readiness.average_window} biheruka ni {formatScore(readiness.average)}/20. Iyandikishe ku kizamini
+                  cy’uruhushya rw’agateganyo.
                 </p>
                 <a
                   href="https://irembo.gov.rw"
@@ -186,7 +187,10 @@ export function ExamResult({ exam, readiness, topics }: { exam: Exam; readiness:
                 </div>
                 <div>
                   <div className="flex justify-between text-sm font-semibold">
-                    <span>Impuzandengo (igomba kurenga {readiness.average_required})</span>
+                    <span>
+                      Impuzandengo y’ibizamini {readiness.average_window} biheruka (igomba kurenga{" "}
+                      {formatScore(readiness.average_required)})
+                    </span>
                     <span>{formatScore(readiness.average)}/20</span>
                   </div>
                   <ProgressBar

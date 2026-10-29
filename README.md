@@ -31,7 +31,8 @@ npm run build && npm start      # production
 | `/amasomo`, `/amasomo/[slug]` | public | 16 lessons; signed-in learners can mark them complete |
 | `/ibyapa` | public | 166 signs and road markings: search, categories, detail view, flashcards |
 | `/ikizamini` | public | Exam rules and the start button |
-| `/injira` | public | Sign in / register with Google (Gmail) |
+| `/injira` | public | Sign in / register with Google (Gmail), or ask for a sign-in link by email |
+| `/injira/imeyili` | public | Where a sign-in link lands: one tap on "Injira" signs in (the link works once) |
 | `/ikibaho` | learner | Dashboard: exam countdown + today's plan, readiness card, averages, score trend, topic mastery |
 | `/imyitozo`, `/imyitozo/kwitoza` | learner | Practice by topic with instant feedback and explanations (random, new, mistakes); offline download card |
 | `/imyitozo/offline` | anyone | Practice from the copy saved on this device (works with no connection) |
@@ -91,7 +92,8 @@ worker, `public/sw.js`, registered in production only (`src/components/pwa/servi
 - **Save for offline**: "Bika kuri iki gikoresho" (practice page and profile) stores the question bank with answers
   and explanations, the lesson and practice pages, their scripts and all 311 images — about 5 MB
   (`src/lib/offline.ts`).
-- **Offline**: page navigations are network-first and fall back to the saved copy; a practice link opened offline
+- **Offline**: page navigations are network-first and fall back to the saved copy (also when a stalled connection has
+  not answered within 4 seconds); a practice link opened offline
   redirects to `/imyitozo/offline`; anything not saved redirects to `/nta-interineti`. `/api`, `/admin` and RSC
   requests are never cached.
 - **Sync**: answers given offline wait in `localStorage` (`gp-outbox`), tagged with the learner's id, and are sent with
@@ -146,7 +148,7 @@ as Cache Components requires; every page prerenders a static shell and streams t
 
 ## Google sign-in (learners)
 
-Learners register and sign in only with Google, on `/injira`. The OAuth client ID is configured on the backend
+Learners register and sign in with Google on `/injira`, or with a link sent by email (next section). The OAuth client ID is configured on the backend
 (`GOOGLE_CLIENT_ID`, step by step in `../gira-perimi-be/README.md`) and served to the page by `GET /api/v1/auth/config`.
 Add every origin the site is opened from to the client's *Authorized JavaScript origins* — for development both
 `http://localhost:3000` and `http://localhost` — and open the site at `http://localhost:3000`.
@@ -155,6 +157,33 @@ The button (`src/components/auth/google-sign-in.tsx`) uses Google's popup flow, 
 and tells the visitor when Google's script cannot load (offline, ad blocker) instead of showing an empty box.
 The site must not send `Referrer-Policy: no-referrer` or `Cross-Origin-Opener-Policy: same-origin`: both break the
 Google button.
+
+## Sign-in links by email
+
+Under the Google button, "Injira ukoresheje imeyili" (`src/components/auth/email-sign-in.tsx`) asks for an address and,
+the first time, a name; the API emails a link that works once, for 15 minutes. It is for learners who cannot use
+Google: a phone set up by its seller, whose Gmail opens but whose password nobody knows, or no Gmail at all. The link
+opens `/injira/imeyili`, where signing in waits for a tap (`email-link-confirm.tsx`), because mail scanners open links
+by themselves. The option is shown only when the API can send email (`email_login` in `GET /auth/config`). Pages opened
+with a `token` in their address are never kept by the service worker.
+
+The profile has "Sohoka ku bikoresho byose" (sign out on every device), and lets learners without a Google account
+change their name.
+
+## Content Security Policy
+
+`next.config.ts` sends a CSP with every page: scripts only from this site and Google's sign-in, no plugins, no
+framing, no `<base>` or form hijacking, and calls and images only to known hosts (this site, Google sign-in and profile
+photos, Sentry when `NEXT_PUBLIC_SENTRY_DSN` is set). Inline scripts stay allowed: the pages are prerendered (Partial
+Prerendering), and nonces would force every page to render per request (see Next's CSP guide in
+`node_modules/next/dist/docs`). Adding a third-party script, font or API means adding its host there.
+
+## Product screenshots
+
+The phones on the home page (`src/components/home/product-screens.tsx`) show real pages, taken by
+`scripts/screenshots.mjs` at phone size, in light and dark, for a demo learner on a throwaway API. The script's header
+lists the three commands. Rerun it after a visible change to the dashboard, the exam or the result page; it also
+reports any page error or anything the CSP blocked.
 
 ## Admin area
 

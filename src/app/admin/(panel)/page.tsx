@@ -62,7 +62,7 @@ async function Overview() {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Kpi icon={Users} label="Abanyeshuri bose" value={String(stats.users_total)} sub={`+${stats.users_new_7d} mu minsi 7`} />
         <Kpi icon={Activity} label="Bakoresheje urubuga" value={String(stats.users_active_7d)} sub="Mu minsi 7 ishize" />
-        <Kpi icon={BadgeCheck} label="Biteguye ikizamini" value={String(stats.users_ready)} sub="Ibizamini >10, impuzandengo >15" />
+        <Kpi icon={BadgeCheck} label="Biteguye ikizamini" value={String(stats.users_ready)} sub="Ibizamini >10, 10 biheruka >15/20" />
         <Kpi icon={ClipboardCheck} label="Ibizamini byakozwe" value={String(stats.exams_total)} sub={`${stats.exams_7d} mu minsi 7`} />
         <Kpi icon={ChartLine} label="Impuzandengo rusange" value={`${formatScore(stats.average_score)}/20`} />
         <Kpi icon={Percent} label="Abatsinze ibizamini" value={formatPercent(stats.pass_rate)} sub="Amanota ≥ 12/20" />

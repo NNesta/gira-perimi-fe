@@ -1,6 +1,17 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, CloudCheck, Flag, Grid3x3, LoaderCircle, TimerReset, TriangleAlert } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CloudCheck,
+  Flag,
+  Grid3x3,
+  LoaderCircle,
+  RotateCcw,
+  TimerReset,
+  TriangleAlert,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,13 +19,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { LogoMark } from "@/components/brand/logo";
 import { optionStates, QuestionView } from "@/components/quiz/question-view";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { api, ApiError, errorMessage } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import type { Exam } from "@/lib/types";
 
 const LETTERS = ["a", "b", "c", "d"];
+// Choices that could not be saved are sent again this long after the last attempt (and as soon as the connection
+// comes back).
+const RETRY_MS = 4000;
 
 function clock(ms: number) {
   const total = Math.max(0, Math.ceil(ms / 1000));
@@ -23,10 +37,12 @@ function clock(ms: number) {
 
 function Navigator({
   answers,
+  unsaved,
   current,
   onJump,
 }: {
   answers: (number | null)[];
+  unsaved: boolean[];
   current: number;
   onJump: (index: number) => void;
 }) {
@@ -39,13 +55,15 @@ function Navigator({
             key={i}
             type="button"
             onClick={() => onJump(i)}
-            aria-label={`Ikibazo ${i + 1}${answer !== null ? ", cyasubijwe" : ""}`}
+            aria-label={`Ikibazo ${i + 1}${answer === null ? "" : unsaved[i] ? ", cyasubijwe ariko ntikibitswe" : ", cyasubijwe"}`}
             aria-current={i === current ? "step" : undefined}
             className={cn(
               "relative grid aspect-square place-items-center rounded-xl text-sm font-bold transition",
-              answer !== null
-                ? "bg-brand-500 text-white hover:bg-brand-600"
-                : "bg-surface-2 text-ink-soft hover:bg-line",
+              answer === null
+                ? "bg-surface-2 text-ink-soft hover:bg-line"
+                : unsaved[i]
+                  ? "bg-sun-300 text-asphalt hover:bg-sun-400"
+                  : "bg-brand-500 text-white hover:bg-brand-600",
               i === current && "ring-2 ring-ocean-500 ring-offset-2 ring-offset-surface",
             )}
           >
@@ -73,33 +91,53 @@ export function ExamRunner({ exam }: { exam: Exam }) {
   // First render uses server times only, so SSR and hydration agree; the interval then follows the clock.
   const [remaining, setRemaining] = useState(() => deadline - new Date(exam.server_time).getTime());
   const [saving, setSaving] = useState(0);
+  // Positions whose latest choice has not reached the server (poor connection). They are sent again until they do,
+  // and in any case with the answer sheet when the exam is handed in.
+  const [unsaved, setUnsaved] = useState<ReadonlySet<number>>(() => new Set());
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const queues = useRef(new Map<number, Promise<unknown>>());
+  const answersRef = useRef(answers);
   const submittedRef = useRef(false);
+  const timeUpRef = useRef(false);
 
   const submit = useCallback(async () => {
     if (submittedRef.current) return;
     submittedRef.current = true;
     setSubmitting(true);
+    setSubmitError(null);
     setConfirmOpen(false);
-    await Promise.allSettled([...queues.current.values()]);
+    setNavOpen(false);
+    // The whole answer sheet goes along, so choices whose own save failed are graded too.
+    const sheet = exam.items.flatMap((item, i) => {
+      const selected = answersRef.current[i];
+      return selected === null ? [] : [{ position: item.position, selected }];
+    });
     try {
-      await api(`/exams/${exam.id}/submit`, { method: "POST" });
-    } catch {
-      // Even if this request fails the server grades the exam at its deadline; the refresh shows the outcome.
+      await api(`/exams/${exam.id}/submit`, { method: "POST", json: { answers: sheet } });
+    } catch (e) {
+      // Nothing was graded: stay on the paper so the learner can hand it in again.
+      submittedRef.current = false;
+      setSubmitting(false);
+      setSubmitError(errorMessage(e));
+      return;
     }
     router.refresh();
-  }, [exam.id, router]);
+  }, [exam.id, exam.items, router]);
 
   useEffect(() => {
     const offset = new Date(exam.server_time).getTime() - Date.now();
     const tick = () => {
       const left = deadline - (Date.now() + offset);
       setRemaining(left);
-      if (left <= 0) void submit();
+      // Hand the paper in once when time is up; if that fails, the time-up screen below offers to try again.
+      if (left <= 0 && !timeUpRef.current) {
+        timeUpRef.current = true;
+        void submit();
+      }
     };
     tick();
     const timer = window.setInterval(tick, 250);
@@ -114,32 +152,79 @@ export function ExamRunner({ exam }: { exam: Exam }) {
     return () => window.removeEventListener("beforeunload", warn);
   }, []);
 
-  const select = useCallback(
-    (choice: number) => {
-      if (submittedRef.current) return;
-      const index = current;
-      const position = exam.items[index].position;
-      setAnswers((prev) => prev.map((value, i) => (i === index ? choice : value)));
-      setSaveError(null);
+  const flagUnsaved = useCallback((position: number, pending: boolean) => {
+    setUnsaved((prev) => {
+      if (prev.has(position) === pending) return prev;
+      const next = new Set(prev);
+      if (pending) next.add(position);
+      else next.delete(position);
+      return next;
+    });
+  }, []);
+
+  const save = useCallback(
+    (position: number, choice: number) => {
       setSaving((n) => n + 1);
       // Saves for the same question run one after another, so the last choice always wins.
       const previous = queues.current.get(position) ?? Promise.resolve();
       const request = previous
         .catch(() => undefined)
         .then(() => api(`/exams/${exam.id}/answers/${position}`, { method: "PUT", json: { selected: choice } }))
+        .then(() => flagUnsaved(position, false))
         .catch((e) => {
           if (e instanceof ApiError && e.status === 409) {
+            // The server has closed the exam (time is up): show the graded result.
             submittedRef.current = true;
             router.refresh();
           } else {
+            flagUnsaved(position, true);
             setSaveError(errorMessage(e));
           }
         })
         .finally(() => setSaving((n) => n - 1));
       queues.current.set(position, request);
     },
-    [current, exam.id, exam.items, router],
+    [exam.id, flagUnsaved, router],
   );
+
+  const select = useCallback(
+    (choice: number) => {
+      if (submittedRef.current) return;
+      const index = current;
+      const next = answersRef.current.map((value, i) => (i === index ? choice : value));
+      answersRef.current = next;
+      setAnswers(next);
+      save(exam.items[index].position, choice);
+    },
+    [current, exam.items, save],
+  );
+
+  const resend = useCallback(() => {
+    if (submittedRef.current) return;
+    exam.items.forEach((item, i) => {
+      const choice = answersRef.current[i];
+      if (choice !== null && unsaved.has(item.position)) save(item.position, choice);
+    });
+  }, [exam.items, save, unsaved]);
+
+  useEffect(() => {
+    if (unsaved.size === 0 || saving > 0) return;
+    const timer = window.setTimeout(resend, RETRY_MS);
+    window.addEventListener("online", resend);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("online", resend);
+    };
+  }, [unsaved, saving, resend]);
+
+  const timeUpFailed = remaining <= 0 && submitError !== null && !submitting;
+
+  useEffect(() => {
+    if (!timeUpFailed) return;
+    const retry = () => void submit();
+    window.addEventListener("online", retry);
+    return () => window.removeEventListener("online", retry);
+  }, [timeUpFailed, submit]);
 
   const go = useCallback(
     (index: number) => {
@@ -165,6 +250,7 @@ export function ExamRunner({ exam }: { exam: Exam }) {
   const item = exam.items[current];
   const answeredCount = answers.filter((a) => a !== null).length;
   const unanswered = answers.length - answeredCount;
+  const unsavedFlags = exam.items.map((entry) => unsaved.has(entry.position));
   const urgent = remaining <= 2 * 60 * 1000;
   const warning = remaining <= 5 * 60 * 1000;
   const totalMs = deadline - new Date(exam.started_at).getTime();
@@ -176,6 +262,30 @@ export function ExamRunner({ exam }: { exam: Exam }) {
           <LoaderCircle className="mx-auto size-12 animate-spin text-brand-500" />
           <p className="mt-5 font-display text-2xl font-extrabold">Turimo kubara amanota yawe...</p>
           <p className="mt-2 text-muted">Tegereza gato.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (timeUpFailed) {
+    return (
+      <div className="grid min-h-dvh place-items-center p-6">
+        <div role="alert" className="max-w-md text-center">
+          <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-signal-50 text-signal-600 dark:bg-signal-500/10">
+            <TriangleAlert className="size-7" />
+          </span>
+          <p className="mt-5 font-display text-2xl font-extrabold">Igihe cyarangiye</p>
+          <p className="mt-2 text-muted">
+            Ntitwashoboye kohereza ikizamini: {submitError} Ibisubizo byabitswe ntibizatakara.
+          </p>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button onClick={() => void submit()}>
+              <RotateCcw className="size-4" /> Ongera ugerageze
+            </Button>
+            <ButtonLink href="/ikibaho" variant="secondary">
+              Subira ku kibaho
+            </ButtonLink>
+          </div>
         </div>
       </div>
     );
@@ -198,6 +308,10 @@ export function ExamRunner({ exam }: { exam: Exam }) {
                 {saving > 0 ? (
                   <>
                     <LoaderCircle className="size-3.5 animate-spin" /> Birabikwa...
+                  </>
+                ) : unsaved.size > 0 ? (
+                  <>
+                    <TriangleAlert className="size-3.5 text-sun-600" /> Ntibibitswe
                   </>
                 ) : (
                   <>
@@ -242,6 +356,19 @@ export function ExamRunner({ exam }: { exam: Exam }) {
 
       <div className="container-page grid gap-6 py-6 sm:py-8 lg:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="card p-5 sm:p-8">
+          {submitError && (
+            <div
+              role="alert"
+              className="mb-6 flex flex-col gap-3 rounded-xl bg-signal-50 px-4 py-3 text-sm font-medium text-signal-700 sm:flex-row sm:items-center sm:justify-between dark:bg-signal-500/10 dark:text-signal-200"
+            >
+              <p className="flex items-center gap-2">
+                <TriangleAlert className="size-4 shrink-0" /> Ikizamini ntikoherejwe: {submitError}
+              </p>
+              <Button size="sm" variant="secondary" className="shrink-0" onClick={() => void submit()}>
+                <RotateCcw className="size-4" /> Ongera ugerageze
+              </Button>
+            </div>
+          )}
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={item.position}
@@ -261,9 +388,13 @@ export function ExamRunner({ exam }: { exam: Exam }) {
               />
             </motion.div>
           </AnimatePresence>
-          {saveError && (
-            <p role="alert" className="mt-4 flex items-center gap-2 rounded-xl bg-signal-50 px-4 py-3 text-sm font-medium text-signal-700 dark:bg-signal-500/10 dark:text-signal-200">
-              <TriangleAlert className="size-4 shrink-0" /> Igisubizo ntikibitswe: {saveError}
+          {unsaved.size > 0 && (
+            <p role="status" className="mt-4 flex items-start gap-2 rounded-xl bg-sun-50 px-4 py-3 text-sm font-medium text-sun-800 dark:bg-sun-400/10 dark:text-sun-200">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+              <span>
+                {unsaved.size === 1 ? "Igisubizo 1 ntikibitswe" : `Ibisubizo ${unsaved.size} ntibibitswe`}
+                {saveError ? `: ${saveError}` : "."} Turongera kubyohereza mu kanya, kandi bizajyana n’ikizamini nusoza.
+              </span>
             </p>
           )}
           <div className="mt-8 hidden items-center justify-between gap-3 lg:flex">
@@ -285,7 +416,7 @@ export function ExamRunner({ exam }: { exam: Exam }) {
         <aside className="hidden lg:block">
           <div className="card sticky top-24 p-5">
             <p className="mb-4 font-bold">Ibibazo byose</p>
-            <Navigator answers={answers} current={current} onJump={go} />
+            <Navigator answers={answers} unsaved={unsavedFlags} current={current} onJump={go} />
             <Button variant="dark" className="mt-5 w-full" onClick={() => setConfirmOpen(true)}>
               <Flag className="size-4" /> Soza ikizamini
             </Button>
@@ -316,7 +447,7 @@ export function ExamRunner({ exam }: { exam: Exam }) {
       </div>
 
       <Dialog open={navOpen} onClose={() => setNavOpen(false)} title="Ibibazo byose" size="sm">
-        <Navigator answers={answers} current={current} onJump={go} />
+        <Navigator answers={answers} unsaved={unsavedFlags} current={current} onJump={go} />
         <Button variant="dark" className="mt-6 w-full" onClick={() => setConfirmOpen(true)}>
           <Flag className="size-4" /> Soza ikizamini
         </Button>
@@ -327,14 +458,17 @@ export function ExamRunner({ exam }: { exam: Exam }) {
         onClose={() => setConfirmOpen(false)}
         title="Urashaka gusoza ikizamini?"
         description={
-          unanswered > 0 ? (
-            <span>
-              Usigaje <strong className="text-signal-600">ibibazo {unanswered}</strong> utasubije. Ibibazo bidasubijwe
-              bibarwa nk’ibisubizo bitari byo.
-            </span>
-          ) : (
-            "Wasubije ibibazo byose. Nusoza, uzahita ubona amanota yawe n’ibisubizo by’ukuri."
-          )
+          <span>
+            {unanswered > 0 ? (
+              <>
+                Usigaje <strong className="text-signal-600">ibibazo {unanswered}</strong> utasubije. Ibibazo bidasubijwe
+                bibarwa nk’ibisubizo bitari byo.
+              </>
+            ) : (
+              "Wasubije ibibazo byose. Nusoza, uzahita ubona amanota yawe n’ibisubizo by’ukuri."
+            )}
+            {unsaved.size > 0 && " Ibisubizo bitarabikwa bizoherezwa hamwe n’ikizamini."}
+          </span>
         }
         size="sm"
       >

@@ -17,7 +17,7 @@ import type { Lesson } from "@/lib/types";
 export async function generateMetadata({ params }: PageProps<"/amasomo/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const lesson = await serverFetch<Lesson>(`/lessons/${slug}`);
+    const lesson = await serverFetch<Lesson>(`/lessons/${encodeURIComponent(slug)}`);
     return { title: lesson.title, description: lesson.summary, ...pageShare(`${lesson.title} · Tsinda Neza`, lesson.summary) };
   } catch {
     return { title: "Isomo" };
@@ -33,7 +33,7 @@ function Paywall({ slug }: { slug: string }) {
         </span>
         <h1 className="mt-6 text-2xl font-extrabold">Iri somo risaba ifatabuguzi</h1>
         <p className="mt-3 text-muted">Iyandikishe ku ifatabuguzi kugira ngo ubone amasomo yose n’ibizamini by’igerageza.</p>
-        <ButtonLink href={`/injira?next=/amasomo/${slug}`} className="mt-8">
+        <ButtonLink href={`/injira?next=${encodeURIComponent(`/amasomo/${slug}`)}`} className="mt-8">
           Injira
         </ButtonLink>
       </div>
@@ -45,7 +45,7 @@ async function LessonContent({ params }: { params: PageProps<"/amasomo/[slug]">[
   const { slug } = await params;
   let lesson: Lesson;
   try {
-    lesson = await serverFetch<Lesson>(`/lessons/${slug}`);
+    lesson = await serverFetch<Lesson>(`/lessons/${encodeURIComponent(slug)}`);
   } catch (error) {
     if (error instanceof ServerApiError && error.status === 404) notFound();
     if (error instanceof ServerApiError && error.status === 402) return <Paywall slug={slug} />;

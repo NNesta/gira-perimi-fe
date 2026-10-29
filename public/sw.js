@@ -1,7 +1,8 @@
 // Tsinda Neza service worker: makes the site installable and lets learners keep studying without a connection.
 //
 //   /_next/static/*, /media/*  cache-first (file names are content-hashed; images never change in place)
-//   page navigations            network-first; the last copy of a page is served when offline
+//   page navigations            network-first; the last copy of a page is served when offline, or when the network
+//                               has not answered within NETWORK_TIMEOUT_MS (a stalled connection)
 //   /imyitozo/kwitoza offline   redirected to /imyitozo/offline, which practises from the saved question bank
 //   anything else not saved     redirected to /nta-interineti (a redirect, not that page under another address,
 //                               so the page hydrates with its own URL)
@@ -21,6 +22,8 @@ const OFFLINE_PRACTICE = "/imyitozo/offline";
 const PRECACHE = [OFFLINE_PAGE, OFFLINE_PRACTICE];
 // Scripts and styles are content-hashed, so each deploy leaves old ones behind; drop those not fetched for 60 days.
 const STATIC_MAX_AGE_MS = 60 * 24 * 60 * 60 * 1000;
+// On a stalled connection a page would stay blank: after this long the saved copy is shown instead, if there is one.
+const NETWORK_TIMEOUT_MS = 4000;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -75,25 +78,43 @@ async function cacheFirst(request, cacheName) {
   return response;
 }
 
-async function page(request, url) {
+async function savedPage(cache, url) {
+  return (
+    (await cache.match(url.pathname + url.search, { ignoreVary: true })) ||
+    (await cache.match(url.pathname, { ignoreVary: true, ignoreSearch: true }))
+  );
+}
+
+async function page(event, url) {
   const cache = await caches.open(PAGES_CACHE);
-  try {
-    const response = await fetch(request);
-    // Exams and redirects (e.g. to /injira) are never kept: an old copy would be wrong.
-    if (response.ok && response.type === "basic" && !response.redirected && !url.pathname.startsWith("/ikizamini/")) {
-      cache.put(url.pathname + url.search, response.clone());
+  const network = fetch(event.request).then((response) => {
+    // Exams and redirects (e.g. to /injira) are never kept: an old copy would be wrong. Nor are pages opened from a
+    // link with a token in it (sign-in, unsubscribe): the token must not linger on the device.
+    const keep = !url.pathname.startsWith("/ikizamini/") && !url.searchParams.has("token");
+    if (response.ok && response.type === "basic" && !response.redirected && keep) {
+      event.waitUntil(cache.put(url.pathname + url.search, response.clone()).catch(() => undefined));
     }
     return response;
+  });
+  // If the network is still silent after NETWORK_TIMEOUT_MS, the saved copy (if any) is shown; the network answer
+  // keeps loading in the background and refreshes that copy for next time.
+  event.waitUntil(network.catch(() => undefined));
+  let timer;
+  const stalled = new Promise((resolve) => {
+    timer = setTimeout(() => resolve(savedPage(cache, url)), NETWORK_TIMEOUT_MS);
+  });
+  try {
+    return (await Promise.race([network, stalled])) || (await network);
   } catch {
     if (url.pathname === "/imyitozo/kwitoza") {
       return Response.redirect(OFFLINE_PRACTICE + url.search, 302);
     }
-    const cached =
-      (await cache.match(url.pathname + url.search, { ignoreVary: true })) ||
-      (await cache.match(url.pathname, { ignoreVary: true, ignoreSearch: true }));
+    const cached = await savedPage(cache, url);
     if (cached) return cached;
     if (url.pathname === OFFLINE_PAGE) return Response.error();
     return Response.redirect(`${OFFLINE_PAGE}?from=${encodeURIComponent(url.pathname + url.search)}`, 302);
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -109,7 +130,7 @@ self.addEventListener("fetch", (event) => {
   } else if (url.pathname.startsWith("/media/")) {
     event.respondWith(cacheFirst(request, MEDIA_CACHE));
   } else if (request.mode === "navigate") {
-    event.respondWith(page(request, url));
+    event.respondWith(page(event, url));
   }
 });
 

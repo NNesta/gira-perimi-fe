@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Save, Trash2 } from "lucide-react";
+import { LogOut, MonitorSmartphone, Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -26,7 +26,10 @@ export function ProfileForm({
 }) {
   const router = useRouter();
   const [phone, setPhone] = useState(user.phone ?? "");
+  // Accounts opened with an email link have no Google profile: their name is theirs to set.
+  const [name, setName] = useState(user.name);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
+  const [leavingAll, setLeavingAll] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [confirm, setConfirm] = useState("");
@@ -37,7 +40,8 @@ export function ProfileForm({
     setSaving(true);
     setStatus(null);
     try {
-      await api("/me", { method: "PATCH", json: { phone: phone.trim() || null } });
+      const changes = user.google_account ? {} : { name: name.trim() };
+      await api("/me", { method: "PATCH", json: { ...changes, phone: phone.trim() || null } });
       setStatus({ ok: true, text: "Byabitswe neza." });
       router.refresh();
     } catch (e) {
@@ -50,6 +54,17 @@ export function ProfileForm({
   async function logout() {
     await api("/auth/logout", { method: "POST" }).catch(() => undefined);
     await leaveSession();
+  }
+
+  async function logoutEverywhere() {
+    setLeavingAll(true);
+    try {
+      await api("/auth/logout-all", { method: "POST" });
+      await leaveSession();
+    } catch (e) {
+      setStatus({ ok: false, text: errorMessage(e) });
+      setLeavingAll(false);
+    }
   }
 
   async function remove() {
@@ -69,12 +84,28 @@ export function ProfileForm({
       <form onSubmit={save} className="card space-y-5 p-6 sm:p-8">
         <div>
           <h2 className="text-lg font-bold">Amakuru yawe</h2>
-          <p className="mt-1 text-sm text-muted">Izina, imeyili n’ifoto biva kuri konti yawe ya Google.</p>
+          <p className="mt-1 text-sm text-muted">
+            {user.google_account
+              ? "Izina, imeyili n’ifoto biva kuri konti yawe ya Google."
+              : "Winjira ukoresheje link twohereza kuri iyi meyili. Ushobora guhindura izina ryawe."}
+          </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="text-sm font-semibold text-muted">Amazina</span>
-            <input value={user.name} readOnly className="mt-1.5 h-11 w-full rounded-xl border border-line bg-surface-2 px-3.5 text-ink-soft" />
+            {user.google_account ? (
+              <input value={user.name} readOnly className="mt-1.5 h-11 w-full rounded-xl border border-line bg-surface-2 px-3.5 text-ink-soft" />
+            ) : (
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                minLength={2}
+                maxLength={100}
+                autoComplete="name"
+                className="mt-1.5 h-11 w-full rounded-xl border border-line bg-surface px-3.5 outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-500/15"
+              />
+            )}
           </label>
           <label className="block">
             <span className="text-sm font-semibold text-muted">Imeyili</span>
@@ -130,11 +161,19 @@ export function ProfileForm({
       <div className="card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div>
           <h2 className="text-lg font-bold">Sohoka</h2>
-          <p className="mt-1 text-sm text-muted">Ibyo wakoze byose bigumaho; uzongera winjire ukoresheje Gmail.</p>
+          <p className="mt-1 text-sm text-muted">
+            Ibyo wakoze byose bigumaho; uzongera winjire ukoresheje Gmail cyangwa imeyili yawe. Niba warinjiriye kuri
+            telefoni cyangwa mudasobwa y’undi, sohoka kuri byose icyarimwe.
+          </p>
         </div>
-        <Button variant="secondary" onClick={logout}>
-          <LogOut className="size-4" /> Sohoka
-        </Button>
+        <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+          <Button variant="secondary" onClick={logout}>
+            <LogOut className="size-4" /> Sohoka
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => void logoutEverywhere()} disabled={leavingAll}>
+            <MonitorSmartphone className="size-4" /> {leavingAll ? "Urasohoka..." : "Sohoka ku bikoresho byose"}
+          </Button>
+        </div>
       </div>
 
       <div className="card flex flex-col gap-4 border-signal-200 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:border-signal-400/30">

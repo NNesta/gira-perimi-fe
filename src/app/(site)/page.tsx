@@ -16,29 +16,20 @@ import {
 } from "lucide-react";
 import { Suspense } from "react";
 
+import { ProductScreens } from "@/components/home/product-screens";
 import { RealResults } from "@/components/home/real-results";
 import { HeroScene } from "@/components/illustrations/hero-scene";
 import { DemoQuiz } from "@/components/quiz/demo-quiz";
 import { ButtonLink } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { serverFetch } from "@/lib/api-server";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getSessionUser } from "@/lib/api-server";
+import { formatScore } from "@/lib/format";
+import { getOverview } from "@/lib/overview";
 import type { Overview } from "@/lib/types";
 
-const DEFAULT_COUNTS = { questions: 399, lessons: 16, signs: 166 };
-
-async function LiveCounts() {
-  let counts = DEFAULT_COUNTS;
-  try {
-    const overview = await serverFetch<Overview>("/overview");
-    counts = { questions: overview.questions, lessons: overview.lessons, signs: overview.signs };
-  } catch {
-    // The marketing page must never fail because the API is unreachable.
-  }
-  return <Counts {...counts} />;
-}
-
-function Counts({ questions, lessons, signs }: typeof DEFAULT_COUNTS) {
+function Counts({ questions, lessons, signs }: Pick<Overview, "questions" | "lessons" | "signs">) {
   const items = [
     { value: questions, label: "Ibibazo by’ikizamini" },
     { value: lessons, label: "Amasomo asobanutse" },
@@ -58,11 +49,19 @@ function Counts({ questions, lessons, signs }: typeof DEFAULT_COUNTS) {
   );
 }
 
-const STEPS = [
+/** "Iyo umaze gukora ibizamini birenga 10 kandi impuzandengo y’ibizamini 10 biheruka ikarenga 15/20" */
+function readinessRule({ exam }: Overview): string {
+  return (
+    `Iyo umaze gukora ibizamini by’igerageza birenga ${exam.readiness_min_exams} kandi impuzandengo y’ibizamini ` +
+    `${exam.readiness_recent_exams} biheruka ikarenga ${formatScore(exam.readiness_min_average)}/20`
+  );
+}
+
+const steps = (o: Overview) => [
   {
     icon: BookOpen,
     title: "Iga",
-    text: "Soma amasomo 16 yanditse mu Kinyarwanda cyoroshye, ashingiye ku mategeko nyayo y’umuhanda.",
+    text: `Soma amasomo ${o.lessons} yanditse mu Kinyarwanda cyoroshye, ashingiye ku mategeko nyayo y’umuhanda.`,
     tone: "bg-ocean-500",
   },
   {
@@ -74,22 +73,22 @@ const STEPS = [
   {
     icon: Timer,
     title: "Kora ibizamini",
-    text: "Ibizamini by’igerageza bimeze nk’ibya Polisi: ibibazo 20 bisubizwa mu minota 20.",
+    text: `Ibizamini by’igerageza bimeze nk’ibya Polisi: ibibazo ${o.exam.question_count} bisubizwa mu minota ${o.exam.duration_minutes}.`,
     tone: "bg-sun-400",
   },
   {
     icon: Trophy,
     title: "Tsinda",
-    text: "Iyo umaze gukora ibizamini birenga 10 ufite impuzandengo irenga 15/20, turakubwira ko witeguye.",
+    text: `${readinessRule(o)}, turakubwira ko witeguye.`,
     tone: "bg-signal-500",
   },
 ];
 
-const FEATURES = [
+const features = (o: Overview) => [
   {
     icon: ClipboardCheck,
     title: "Ikizamini kimeze nk’icya nyacyo",
-    text: "Isaha ibara iminota 20, ibibazo 20 bitoranywa ku buryo butunguranye, amanota 12 kugira ngo utsinde. Ikizamini kirangira ubwacyo iyo igihe kirangiye.",
+    text: `Isaha ibara iminota ${o.exam.duration_minutes}, ibibazo ${o.exam.question_count} bitoranywa ku buryo butunguranye, amanota ${o.exam.pass_mark} kugira ngo utsinde. Ikizamini kirangira ubwacyo iyo igihe kirangiye.`,
     className: "md:col-span-2",
   },
   {
@@ -100,12 +99,12 @@ const FEATURES = [
   {
     icon: Layers,
     title: "Ibyapa byose",
-    text: "Ibyapa birenga 150 by’iteka rigenga umuhanda, n’amakarita yo kubifata mu mutwe.",
+    text: `Ibyapa ${o.signs} by’iteka rigenga umuhanda, n’amakarita yo kubifata mu mutwe.`,
   },
   {
     icon: BadgeCheck,
     title: "Ibibazo nyabyo",
-    text: "Ibibazo 404 byo mu gitabo cy’ibibazo by’ikizamini, uko byakabaye, n’amashusho yabyo.",
+    text: `Ibibazo ${o.questions} byo mu gitabo cy’ibibazo by’ikizamini, uko byakabaye, n’amashusho yabyo.`,
   },
   {
     icon: Smartphone,
@@ -115,7 +114,7 @@ const FEATURES = [
   {
     icon: Gift,
     title: "Ubuntu",
-    text: "Ubu ibintu byose ni ubuntu. Iyandikishe ukoresheje Gmail yawe mu masegonda make.",
+    text: "Ubu ibintu byose ni ubuntu. Iyandikishe ukoresheje Gmail cyangwa imeyili yawe mu masegonda make.",
     className: "md:col-span-3",
   },
 ];
@@ -125,7 +124,7 @@ const MARQUEE_SIGNS = [
   "a-15", "c-18", "e-20", "a-7", "c-13a", "a-27", "d-4", "e-13a",
 ];
 
-const FAQ = [
+const faq = (o: Overview) => [
   {
     q: "Tsinda Neza ni iki?",
     a: "Ni urubuga rugufasha kwiga amategeko y’umuhanda mu Kinyarwanda no kwitegura ikizamini cy’uruhushya rw’agateganyo rwo gutwara ibinyabiziga, ukoresheje amasomo, ibyapa, imyitozo n’ibizamini by’igerageza.",
@@ -136,11 +135,11 @@ const FAQ = [
   },
   {
     q: "Ikizamini cy’igerageza giteye gite?",
-    a: "Ni kimwe n’icya Polisi: ibibazo 20 bisubizwa mu minota 20, kandi ugomba kubona nibura 12/20 (60%) kugira ngo utsinde. Iyo igihe kirangiye, ikizamini kirifunga kikabara ibisubizo wari umaze gutanga.",
+    a: `Ni kimwe n’icya Polisi: ibibazo ${o.exam.question_count} bisubizwa mu minota ${o.exam.duration_minutes}, kandi ugomba kubona nibura ${o.exam.pass_mark}/${o.exam.question_count} (${Math.round((o.exam.pass_mark / o.exam.question_count) * 100)}%) kugira ngo utsinde. Iyo igihe kirangiye, ikizamini kirifunga kikabara ibisubizo wari umaze gutanga.`,
   },
   {
     q: "Nzamenya nte ko niteguye kujya gukora ikizamini?",
-    a: "Iyo umaze gukora ibizamini by’igerageza birenga 10, kandi impuzandengo y’amanota yawe ikarenga 15/20, ikibaho cyawe kikwereka ko witeguye kandi tukakugira inama yo kwiyandikisha ku kizamini nyirizina.",
+    a: `${readinessRule(o)}, ikibaho cyawe kikwereka ko witeguye kandi tukakugira inama yo kwiyandikisha ku kizamini nyirizina. Ibizamini wavuyemo igihe kigashira utarasubiza nibura kimwe cya kabiri cy’ibibazo ntibibarwa.`,
   },
   {
     q: "Ese birishyurwa?",
@@ -148,11 +147,97 @@ const FAQ = [
   },
   {
     q: "Niyandikisha nte?",
-    a: "Kanda kuri “Injira”, uhitemo konti yawe ya Gmail (Google). Ubwa mbere bigufungurira konti, ubutaha bikwinjiza ako kanya. Ifoto n’izina byawe bya Google ni byo bigaragara kuri konti yawe.",
+    a: "Kanda kuri “Injira”, uhitemo konti yawe ya Gmail (Google). Niba utazi ijambobanga rya Gmail yawe cyangwa udafite Gmail, hitamo “Injira ukoresheje imeyili”: tukoherereza link, ukayikanda ukinjira. Ubwa mbere bigufungurira konti, ubutaha bikwinjiza ako kanya.",
   },
 ];
 
-export default function HomePage() {
+/** Hero buttons: a signed-in learner is sent back to their dashboard instead of being asked to sign up. */
+async function HeroActions() {
+  const user = await getSessionUser();
+  return (
+    <>
+      <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+        {user ? (
+          <ButtonLink href="/ikibaho" size="lg">
+            Komeza kwiga <ArrowRight className="size-5" />
+          </ButtonLink>
+        ) : (
+          <ButtonLink href="/injira" size="lg">
+            Tangira ku buntu <ArrowRight className="size-5" />
+          </ButtonLink>
+        )}
+        <ButtonLink href="#gerageza" variant="secondary" size="lg">
+          Gerageza ibibazo 5
+        </ButtonLink>
+      </div>
+      <p className="mt-4 flex items-center gap-2 text-sm text-muted">
+        <CircleCheck className="size-4 text-brand-500" />
+        {user
+          ? `Murakaza neza, ${user.given_name || user.name.split(" ")[0]}! Komeza aho wari ugeze.`
+          : "Iyandikishe ukoresheje Gmail cyangwa imeyili yawe, mu masegonda make."}
+      </p>
+    </>
+  );
+}
+
+function HeroActionsSkeleton() {
+  return (
+    <>
+      <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+        <Skeleton className="h-14 rounded-2xl sm:w-56" />
+        <Skeleton className="h-14 rounded-2xl sm:w-56" />
+      </div>
+      <Skeleton className="mt-4 h-5 w-72 max-w-full" />
+    </>
+  );
+}
+
+/** Closing call to action, worded for whether the visitor already has an account. */
+async function FinalActions() {
+  const user = await getSessionUser();
+  return (
+    <>
+      <p className="mt-4 text-lg text-white/85">
+        {user ? "Komeza wige" : "Iyandikishe uyu munsi, wige"} iminota 15 ku munsi, maze ugere ku munsi w’ikizamini
+        wizeye intsinzi.
+      </p>
+      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        {user ? (
+          <ButtonLink href="/ikibaho" variant="sun" size="lg">
+            Jya ku kibaho cyanjye <ArrowRight className="size-5" />
+          </ButtonLink>
+        ) : (
+          <ButtonLink href="/injira" variant="sun" size="lg">
+            Iyandikishe ku buntu <ArrowRight className="size-5" />
+          </ButtonLink>
+        )}
+        <ButtonLink
+          href="/amasomo"
+          size="lg"
+          className="bg-white/15 from-transparent to-transparent shadow-none ring-1 ring-white/30 hover:bg-white/25"
+        >
+          {user ? "Reba amasomo" : "Banza urebe amasomo"}
+        </ButtonLink>
+      </div>
+    </>
+  );
+}
+
+function FinalActionsSkeleton() {
+  return (
+    <div aria-hidden>
+      <div className="mx-auto mt-4 h-14 max-w-xl rounded-xl bg-white/15" />
+      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <div className="h-14 rounded-2xl bg-white/15 sm:w-64" />
+        <div className="h-14 rounded-2xl bg-white/15 sm:w-56" />
+      </div>
+    </div>
+  );
+}
+
+export default async function HomePage() {
+  const overview = await getOverview();
+  const { exam } = overview;
   return (
     <>
       {/* ------------------------------------------------------------ hero */}
@@ -181,26 +266,17 @@ export default function HomePage() {
             <div className="enter enter-3">
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
                 Amasomo asobanutse, ibyapa byose, n’ibibazo by’ikizamini nyirizina. Witoze nk’uko bigenda kwa
-                Polisi: ibibazo 20 mu minota 20, ukurikirane aho ugeze kugeza witeguye.
+                Polisi: ibibazo {exam.question_count} mu minota {exam.duration_minutes}, ukurikirane aho ugeze kugeza
+                witeguye.
               </p>
             </div>
             <div className="enter enter-4">
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <ButtonLink href="/injira" size="lg">
-                  Tangira ku buntu <ArrowRight className="size-5" />
-                </ButtonLink>
-                <ButtonLink href="#gerageza" variant="secondary" size="lg">
-                  Gerageza ibibazo 5
-                </ButtonLink>
-              </div>
-              <p className="mt-4 flex items-center gap-2 text-sm text-muted">
-                <CircleCheck className="size-4 text-brand-500" /> Iyandikishe ukoresheje Gmail yawe, mu masegonda make.
-              </p>
+              <Suspense fallback={<HeroActionsSkeleton />}>
+                <HeroActions />
+              </Suspense>
             </div>
             <div className="enter enter-5 mt-12 border-t border-line pt-8">
-              <Suspense fallback={<Counts {...DEFAULT_COUNTS} />}>
-                <LiveCounts />
-              </Suspense>
+              <Counts {...overview} />
             </div>
           </div>
           <div className="enter enter-3">
@@ -221,6 +297,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ------------------------------------------------------------ the product, on a phone */}
+      <ProductScreens />
+
       {/* ------------------------------------------------------------ how it works */}
       <section id="uko-bikora" className="container-page scroll-mt-24 py-20 sm:py-28">
         <Reveal>
@@ -236,7 +315,7 @@ export default function HomePage() {
             aria-hidden
             className="absolute left-0 right-0 top-9 hidden h-[3px] bg-[repeating-linear-gradient(90deg,var(--color-sun-300)_0_18px,transparent_18px_34px)] lg:block"
           />
-          {STEPS.map((step, i) => (
+          {steps(overview).map((step, i) => (
             <Reveal key={step.title} delay={i * 0.08}>
               <li className="card relative h-full p-6">
                 <span className={`grid size-[4.5rem] place-items-center rounded-3xl text-white shadow-lift ${step.tone}`}>
@@ -288,7 +367,7 @@ export default function HomePage() {
           />
         </Reveal>
         <div className="mt-14 grid gap-5 md:grid-cols-3">
-          {FEATURES.map((feature, i) => (
+          {features(overview).map((feature, i) => (
             <Reveal key={feature.title} delay={(i % 3) * 0.06} className={feature.className}>
               <div className="card group h-full p-7 transition duration-300 hover:-translate-y-1 hover:shadow-lift">
                 <span className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-50 to-ocean-50 text-brand-600 ring-1 ring-brand-100 transition group-hover:scale-110 dark:from-brand-500/15 dark:to-ocean-500/10 dark:text-brand-300 dark:ring-brand-400/20">
@@ -325,9 +404,9 @@ export default function HomePage() {
               </div>
               <div className="grid grid-cols-3 gap-3 sm:gap-5">
                 {[
-                  { value: "20", label: "Ibibazo" },
-                  { value: "20′", label: "Iminota" },
-                  { value: "12", label: "Amanota yo gutsinda" },
+                  { value: String(exam.question_count), label: "Ibibazo" },
+                  { value: `${exam.duration_minutes}′`, label: "Iminota" },
+                  { value: String(exam.pass_mark), label: "Amanota yo gutsinda" },
                 ].map((item) => (
                   <div key={item.label} className="rounded-3xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur sm:p-7">
                     <p className="font-display text-4xl font-extrabold text-sun-300 sm:text-6xl">{item.value}</p>
@@ -337,8 +416,7 @@ export default function HomePage() {
                 <div className="col-span-3 rounded-3xl border border-brand-400/30 bg-brand-500/15 p-5 sm:p-6">
                   <p className="flex items-start gap-3 text-sm leading-relaxed text-white/90 sm:text-base">
                     <Trophy className="mt-0.5 size-5 shrink-0 text-sun-300" />
-                    Iyo umaze gukora ibizamini by’igerageza birenga 10 ufite impuzandengo irenga 15/20, ikibaho cyawe
-                    kikubwira ko witeguye kujya gukora ikizamini nyirizina.
+                    {readinessRule(overview)}, ikibaho cyawe kikubwira ko witeguye kujya gukora ikizamini nyirizina.
                   </p>
                 </div>
               </div>
@@ -353,7 +431,7 @@ export default function HomePage() {
           <Reveal>
             <SectionHeading
               eyebrow="Ibyapa byo ku muhanda"
-              title="Ibyapa birenga 150, buri kimwe n’igisobanuro cyacyo"
+              title={`Ibyapa ${overview.signs}, buri kimwe n’igisobanuro cyacyo`}
               description="Ibyapa biburira, ibibuza, ibitegeka, ibiyobora n’imirongo yo mu muhanda, byose uko biri mu iteka rigenga umuhanda."
             />
           </Reveal>
@@ -388,7 +466,7 @@ export default function HomePage() {
             />
           </Reveal>
           <div className="space-y-3">
-            {FAQ.map((item, i) => (
+            {faq(overview).map((item, i) => (
               <Reveal key={item.q} delay={i * 0.04}>
                 <details className="card group p-0 [&_summary::-webkit-details-marker]:hidden">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-lg font-bold sm:p-6">
@@ -412,21 +490,9 @@ export default function HomePage() {
             <div aria-hidden className="bg-grid absolute inset-0 opacity-20" />
             <div className="relative mx-auto max-w-2xl">
               <h2 className="text-3xl font-extrabold leading-tight sm:text-5xl">Perimi yawe itangirira hano.</h2>
-              <p className="mt-4 text-lg text-white/85">
-                Iyandikishe uyu munsi, wige iminota 15 ku munsi, maze ugere ku munsi w’ikizamini wizeye intsinzi.
-              </p>
-              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                <ButtonLink href="/injira" variant="sun" size="lg">
-                  Iyandikishe ukoresheje Gmail <ArrowRight className="size-5" />
-                </ButtonLink>
-                <ButtonLink
-                  href="/amasomo"
-                  size="lg"
-                  className="bg-white/15 from-transparent to-transparent shadow-none ring-1 ring-white/30 hover:bg-white/25"
-                >
-                  Banza urebe amasomo
-                </ButtonLink>
-              </div>
+              <Suspense fallback={<FinalActionsSkeleton />}>
+                <FinalActions />
+              </Suspense>
             </div>
           </div>
         </Reveal>

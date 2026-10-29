@@ -8,10 +8,14 @@ import type { Readiness, User } from "@/lib/types";
 
 function message(r: Readiness): string {
   if (r.status === "new") return "Kora ikizamini cy’igerageza cya mbere kugira ngo tumenye aho uhagaze.";
-  if (r.ready) return "Witeguye! Impuzandengo yawe irenga 15/20 mu bizamini birenga 10. Iyandikishe ku kizamini nyirizina.";
+  if (r.ready) {
+    return `Witeguye! Impuzandengo y’ibizamini ${r.average_window} biheruka irenga ${formatScore(r.average_required)}/20. Iyandikishe ku kizamini nyirizina.`;
+  }
   const parts: string[] = [];
   if (r.exams_remaining > 0) parts.push(`usigaje ${plural(r.exams_remaining, "ikizamini", "ibizamini")}`);
-  if ((r.average ?? 0) <= r.average_required) parts.push(`impuzandengo yawe igomba kurenga ${r.average_required}/20`);
+  if ((r.average ?? 0) <= r.average_required) {
+    parts.push(`impuzandengo y’ibizamini ${r.average_window} biheruka igomba kurenga ${formatScore(r.average_required)}/20`);
+  }
   const lead = r.status === "almost" ? "Uri hafi kugera ku ntego:" : "Komeza witoze:";
   return `${lead} ${parts.join(", kandi ")}.`;
 }
@@ -84,7 +88,7 @@ export function ReadinessCard({ user, readiness }: { user: User; readiness: Read
             good={readiness.exams_completed >= readiness.exams_required}
           />
           <Meter
-            label={`Impuzandengo (igomba kurenga ${readiness.average_required})`}
+            label={`Impuzandengo y’ibizamini ${readiness.average_window} biheruka (igomba kurenga ${formatScore(readiness.average_required)})`}
             value={readiness.average ?? 0}
             max={20}
             display={`${formatScore(readiness.average)}/20`}

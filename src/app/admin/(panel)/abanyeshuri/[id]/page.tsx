@@ -81,7 +81,9 @@ async function Detail({ params }: { params: PageProps<"/admin/abanyeshuri/[id]">
           </div>
           <div>
             <div className="flex justify-between text-sm font-semibold">
-              <span>Impuzandengo (igomba kurenga {r.average_required})</span>
+              <span>
+                Impuzandengo y’ibizamini {r.average_window} biheruka (igomba kurenga {r.average_required})
+              </span>
               <span>{formatScore(r.average)}/20</span>
             </div>
             <ProgressBar value={r.average ?? 0} max={20} className="mt-2" />

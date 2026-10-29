@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
+import { EmailSignIn } from "@/components/auth/email-sign-in";
 import { GoogleSignIn } from "@/components/auth/google-sign-in";
 import { LogoMark } from "@/components/brand/logo";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +13,7 @@ import type { AuthConfig } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Injira",
-  description: "Injira cyangwa wiyandikishe kuri Tsinda Neza ukoresheje konti yawe ya Gmail.",
+  description: "Injira cyangwa wiyandikishe kuri Tsinda Neza ukoresheje Gmail yawe cyangwa imeyili yawe.",
 };
 
 const BENEFITS = [
@@ -33,7 +34,21 @@ async function SignInPanel({ searchParams }: { searchParams: PageProps<"/injira"
     config = null;
   }
 
-  if (config?.google_client_id) return <GoogleSignIn clientId={config.google_client_id} next={next} />;
+  const google = config?.google_client_id;
+  const emailLogin = !!config?.email_login;
+  if (google || emailLogin) {
+    return (
+      <div className="space-y-5">
+        {google && <GoogleSignIn clientId={google} next={next} />}
+        {google && emailLogin && (
+          <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.12em] text-muted">
+            <span className="h-px flex-1 bg-line" /> cyangwa <span className="h-px flex-1 bg-line" />
+          </div>
+        )}
+        {emailLogin && <EmailSignIn next={next} startOpen={!google} />}
+      </div>
+    );
+  }
 
   return (
     <div role="status" className="rounded-2xl bg-surface-2 p-4 text-center text-sm leading-relaxed text-muted">
@@ -80,8 +95,8 @@ export default function SignInPage({ searchParams }: PageProps<"/injira">) {
           <LogoMark className="size-12 lg:hidden" />
           <h1 className="mt-6 text-3xl font-extrabold lg:mt-0">Murakaza neza!</h1>
           <p className="mt-3 leading-relaxed text-muted">
-            Injira ukoresheje konti yawe ya <strong className="text-ink">Gmail</strong>. Niba ari ubwa mbere, konti
-            yawe ihita ifungurwa.
+            Injira ukoresheje <strong className="text-ink">Gmail</strong> yawe cyangwa imeyili yawe. Niba ari ubwa
+            mbere, konti yawe ihita ifungurwa.
           </p>
           <div className="mt-8">
             <Suspense fallback={<Skeleton className="h-11 w-full rounded-full" />}>
@@ -90,8 +105,8 @@ export default function SignInPage({ searchParams }: PageProps<"/injira">) {
           </div>
           <p className="mt-8 flex items-start gap-2.5 text-xs leading-relaxed text-muted">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-brand-500" />
-            Dukoresha izina, imeyili n’ifoto bya konti yawe ya Google gusa, kugira ngo tubike aho ugeze. Ntidushobora
-            kubona ijambobanga ryawe.
+            Dukoresha izina n’imeyili yawe gusa (n’ifoto iyo winjiye na Google), kugira ngo tubike aho ugeze.
+            Ntidushobora kubona ijambobanga ryawe.
           </p>
         </div>
       </div>

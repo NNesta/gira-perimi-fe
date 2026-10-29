@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 
 import { api, errorMessage } from "@/lib/api";
 import { cn } from "@/lib/cn";
-import { safeNext } from "@/lib/redirect";
+import { afterSignIn } from "@/lib/redirect";
 import { isDarkTheme, subscribeResolvedTheme } from "@/lib/theme";
 import type { User } from "@/lib/types";
 
@@ -80,9 +80,7 @@ export function GoogleSignIn({ clientId, next }: { clientId: string; next?: stri
       setError(null);
       try {
         const user = await api<User>("/auth/google", { method: "POST", json: { credential } });
-        // New learners get the short welcome first, then go on to where they were heading.
-        const destination = safeNext(next);
-        router.replace(user.onboarded ? destination : `/ikaze?next=${encodeURIComponent(destination)}`);
+        router.replace(afterSignIn(user, next));
         router.refresh();
       } catch (e) {
         setError(errorMessage(e));
