@@ -20,12 +20,14 @@ export function OfflineCard({ uid, className }: { uid: string; className?: strin
   const [meta, setMeta] = useState<OfflineMeta | null>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [audio, setAudio] = useState(false);
 
   useEffect(() => {
     const saved = readOfflineMeta();
     // Reading localStorage after hydration; a copy saved by another learner on this device does not count.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMeta(saved && saved.uid === uid ? saved : null);
+    setAudio(!!(saved && saved.uid === uid && saved.audio));
   }, [uid]);
 
   if (!supported) return null;
@@ -34,7 +36,7 @@ export function OfflineCard({ uid, className }: { uid: string; className?: strin
     setError(null);
     setProgress({ done: 0, total: 1 });
     try {
-      setMeta(await downloadForOffline(uid, (done, total) => setProgress({ done, total })));
+      setMeta(await downloadForOffline(uid, (done, total) => setProgress({ done, total }), { audio }));
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -56,6 +58,19 @@ export function OfflineCard({ uid, className }: { uid: string; className?: strin
             Bika amasomo, ibyapa n’ibibazo byose kuri iki gikoresho (nka MB 5), maze wige n’igihe nta interineti
             ufite. Ibisubizo utanga icyo gihe byoherezwa ugarutse kuri interineti.
           </p>
+          <label className="mt-3 flex items-start gap-2.5 text-sm">
+            <input
+              type="checkbox"
+              checked={audio}
+              onChange={(e) => setAudio(e.target.checked)}
+              disabled={saving}
+              className="mt-0.5 size-4 shrink-0 accent-brand-600"
+            />
+            <span>
+              <span className="font-semibold">Bika n’amajwi y’ibibazo (Umva)</span>{" "}
+              <span className="text-muted">— nka MB 43 zindi. Ayo umaze kumva yo arabikwa ubwayo.</span>
+            </span>
+          </label>
           {meta && !saving && (
             <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-brand-700 dark:text-brand-300">
               <CircleCheck className="size-4 shrink-0" aria-hidden /> Byabitswe {formatDateTime(meta.savedAt)}

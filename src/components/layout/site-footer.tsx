@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/brand/logo";
+import { getOverview } from "@/lib/overview";
 import { TextSizeControl } from "@/components/theme/text-size-control";
 import { ThemeSegmented } from "@/components/theme/theme-toggle";
 
@@ -33,7 +34,8 @@ const COLUMNS = [
   },
 ];
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const { audio_credit: audioCredit } = await getOverview();
   return (
     <footer className="mt-24 border-t border-line bg-surface pb-24 lg:pb-0">
       <div className="h-1.5 bg-[linear-gradient(90deg,#00a1de_0_50%,#fad201_50%_75%,#20603d_75%)]" aria-hidden />
@@ -66,7 +68,11 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-line">
         <div className="container-page flex flex-col gap-3 py-6 text-sm text-muted md:flex-row md:items-center md:justify-between">
-          <p>© 2026 Tsinda Neza. Uburenganzira bwose burasigasiwe.</p>
+          <p>
+            © 2026 Tsinda Neza. Uburenganzira bwose burasigasiwe.
+            {/* The voice's licence (CC BY) asks for this credit wherever the clips are used. */}
+            {audioCredit && <span className="mt-1 block text-xs">{audioCredit}</span>}
+          </p>
           <p className="max-w-2xl md:text-right">
             Tsinda Neza si urubuga rwa Polisi y’u Rwanda. Ibibazo n’amasomo bishingiye ku gitabo cy’ibibazo
             by’ikizamini, Iteka rya Perezida n° 85/01 n’Itegeko n° 014/2026 rigenga ikoreshwa ry’umuhanda.

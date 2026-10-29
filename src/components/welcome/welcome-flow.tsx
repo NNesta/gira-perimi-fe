@@ -397,6 +397,7 @@ export function WelcomeFlow({
                     onSelect={choose}
                     disabled={answered}
                     topicLabel={topicById.get(question.topic)?.name}
+                    audio={question.audio}
                   />
                   {answered && (
                     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-5 space-y-3">
@@ -409,7 +410,7 @@ export function WelcomeFlow({
                           <p className="flex items-center gap-2 font-bold text-signal-700 dark:text-signal-300">
                             <CircleX className="size-5" aria-hidden /> Si byo. Igisubizo cy’ukuri kirerekanywe haruguru.
                           </p>
-                          <Explanation text={question.explanation} lawRef={question.law_ref} compact />
+                          <Explanation text={question.explanation} lawRef={question.law_ref} audio={question.explanation_audio} compact />
                         </>
                       )}
                     </motion.div>

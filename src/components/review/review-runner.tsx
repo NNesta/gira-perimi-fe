@@ -255,6 +255,7 @@ export function ReviewRunner({ session, topics, uid }: { session: ReviewSession;
                 onSelect={choose}
                 disabled={answered}
                 topicLabel={topicName(item.question.topic)}
+                audio={item.question.audio}
               />
               {answered && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 space-y-3">
@@ -280,7 +281,7 @@ export function ReviewRunner({ session, topics, uid }: { session: ReviewSession;
                         : `Si byo: igisubizo ni (${LETTERS[item.question.answer]}). Kizagaruka ejo.`}
                     </p>
                   </div>
-                  <Explanation text={item.question.explanation} lawRef={item.question.law_ref} />
+                  <Explanation text={item.question.explanation} lawRef={item.question.law_ref} audio={item.question.explanation_audio} />
                   <Button onClick={advance} size="lg" className="w-full sm:w-auto">
                     {index + 1 >= items.length ? "Reba uko wakoze" : "Ibikurikira"} <ArrowRight className="size-4" />
                   </Button>

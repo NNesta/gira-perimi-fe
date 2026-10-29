@@ -17,6 +17,9 @@ const PRIVATE = [
   "/injira",
   "/nta-interineti",
   "/reka-kwibutswa",
+  "/umwarimu",
+  "/ishuri/",
+  "/hangana/",
 ];
 
 export default function robots(): MetadataRoute.Robots {

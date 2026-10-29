@@ -3,20 +3,22 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { ProfileForm } from "@/components/profile/profile-form";
+import { MyClassesCard } from "@/components/teaching/join-class";
 import { TextSizeControl } from "@/components/theme/text-size-control";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { learnerFetch, serverFetch } from "@/lib/api-server";
 import { formatDate } from "@/lib/format";
-import type { AuthConfig, User } from "@/lib/types";
+import type { AuthConfig, MyClass, User } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Umwirondoro" };
 
 async function Profile() {
-  const [user, config] = await Promise.all([
+  const [user, config, classes] = await Promise.all([
     learnerFetch<User>("/auth/me", "/umwirondoro"),
     serverFetch<AuthConfig>("/auth/config").catch(() => null),
+    serverFetch<MyClass[]>("/me/classes").catch(() => []),
   ]);
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
@@ -37,11 +39,14 @@ async function Profile() {
           <TextSizeControl className="mt-2" />
         </div>
       </aside>
-      <ProfileForm
-        user={user}
-        remindersAvailable={!!config?.reminders_available}
-        pushPublicKey={config?.push_public_key ?? null}
-      />
+      <div className="space-y-6">
+        <MyClassesCard classes={classes} />
+        <ProfileForm
+          user={user}
+          remindersAvailable={!!config?.reminders_available}
+          pushPublicKey={config?.push_public_key ?? null}
+        />
+      </div>
     </div>
   );
 }

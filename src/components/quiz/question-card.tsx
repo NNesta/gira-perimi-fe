@@ -82,7 +82,7 @@ export function QuestionCard({
         })}
       </ul>
 
-      <Explanation text={question.explanation} lawRef={question.law_ref} compact className="mt-4" />
+      <Explanation text={question.explanation} lawRef={question.law_ref} audio={question.explanation_audio} compact className="mt-4" />
     </article>
   );
 }

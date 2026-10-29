@@ -28,6 +28,8 @@ const CSP = [
   // Google profile photos; data:/blob: for generated pictures (shared result card, confetti).
   "img-src 'self' data: blob: https://*.googleusercontent.com",
   "font-src 'self' data:",
+  // "Umva" clips play from blob: copies of the fetched file (so the service worker can keep them offline).
+  "media-src 'self' blob:",
   `connect-src 'self' ${GOOGLE_GSI} ${sentryOrigin()}${DEV ? " ws:" : ""}`.trim(),
   `frame-src ${GOOGLE_GSI}`,
   // canvas-confetti draws in a worker it creates from a blob.

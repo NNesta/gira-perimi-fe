@@ -168,7 +168,7 @@ async function DashboardContent() {
       )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.05fr_1fr]">
-        <ReadinessCard user={user} readiness={readiness} />
+        <ReadinessCard user={user} readiness={readiness} prediction={data.prediction} />
         <div className="grid grid-cols-2 gap-4">
           <StatTile icon={ClipboardCheck} label="Ibizamini wakoze" value={String(exams.completed)} sub={`${exams.passed} watsinze`} />
           <StatTile icon={ChartLine} label="Impuzandengo" value={`${formatScore(exams.average)}/20`} sub="Ku bizamini byose" />

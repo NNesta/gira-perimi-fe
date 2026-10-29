@@ -22,7 +22,7 @@ const OUTBOX_LIMIT = 2000;
 const SYNC_BATCH = 500;
 const DOWNLOAD_CONCURRENCY = 6;
 
-export type OfflineMeta = { uid: string; version: string; savedAt: string; files: number };
+export type OfflineMeta = { uid: string; version: string; savedAt: string; files: number; audio?: boolean };
 
 export type PendingAnswer = {
   client_id: string;
@@ -99,9 +99,14 @@ async function pool<T>(items: T[], worker: (item: T) => Promise<void>) {
 
 /**
  * Saves everything needed to study offline. Reports progress as (done, total) files. Throws on a network error or
- * when the session has expired (ApiError 401).
+ * when the session has expired (ApiError 401). With `audio`, every "Umva" clip too (a much bigger download; clips
+ * already played are kept anyway).
  */
-export async function downloadForOffline(uid: string, onProgress: (done: number, total: number) => void) {
+export async function downloadForOffline(
+  uid: string,
+  onProgress: (done: number, total: number) => void,
+  { audio = false }: { audio?: boolean } = {},
+) {
   const [packResponse, lessons, signs] = await Promise.all([
     fetch(PACK_URL, { credentials: "same-origin" }),
     api<LessonSummary[]>("/lessons"),
@@ -124,6 +129,7 @@ export async function downloadForOffline(uid: string, onProgress: (done: number,
   for (const q of pack.questions) {
     if (q.image) images.add(q.image);
     for (const o of q.options) if (o.image) images.add(o.image);
+    if (audio) for (const clip of [q.audio, q.explanation_audio]) if (clip) images.add(clip);
   }
 
   const [pageCache, staticCache, mediaCache, packCache] = await Promise.all([
@@ -162,7 +168,7 @@ export async function downloadForOffline(uid: string, onProgress: (done: number,
     tick();
   });
 
-  const meta: OfflineMeta = { uid, version: pack.version, savedAt: new Date().toISOString(), files: total };
+  const meta: OfflineMeta = { uid, version: pack.version, savedAt: new Date().toISOString(), files: total, audio };
   writeJSON(META_KEY, meta);
   return meta;
 }

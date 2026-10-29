@@ -40,6 +40,10 @@ npm run build && npm start      # production
 | `/imyitozo/shakisha` | learner | Search the whole question bank (words or booklet number), matches highlighted |
 | `/admin/ubuhamya` | admin | Testimonials from learners who passed the real exam: approve or hide |
 | `/ibihembo` | learner | Achievement badges: earned ones in colour, the rest with their progress |
+| `/hangana/[code]` | anyone | "Hangana nanjye": a friend's challenge (their score, then the same 20 questions); its preview is `ifoto` |
+| `/umwarimu`, `/umwarimu/[classId]`, `/umwarimu/[classId]/[userId]` | instructor | Driving-school classes: join codes, each learner's readiness and weak topics, learner report |
+| `/ishuri/[code]` | anyone | Join a driving-school class with its code, after agreeing to share progress with its instructors |
+| `/admin/amashuri` | admin | Driving schools and their instructors (by email); open or close a school |
 | `/natsinze/[code]` | anyone | A result card someone shared ("Nabonye 19/20"); its link preview is the card (`ifoto`) |
 | `/imyitozo/amakosa` | learner | Every question answered wrongly, by topic and status, with the learner's choice and the explanation |
 | `/isubiramo` | learner | Spaced review: due questions and sign flashcards, Leitner boxes |
@@ -157,6 +161,20 @@ The button (`src/components/auth/google-sign-in.tsx`) uses Google's popup flow, 
 and tells the visitor when Google's script cannot load (offline, ad blocker) instead of showing an empty box.
 The site must not send `Referrer-Policy: no-referrer` or `Cross-Origin-Opener-Policy: same-origin`: both break the
 Google button.
+
+## "Umva", challenges, driving schools
+
+- **Umva** (`src/components/quiz/listen-button.tsx`, `src/lib/audio.ts`): a button on every question and explanation
+  that has a clip. One clip plays at a time; each is fetched whole and played from a `blob:` URL, so the service worker
+  keeps it and it plays again offline (the CSP allows `media-src blob:` for this). The offline card can also save every
+  clip at once (about 43 MB, off by default). The footer shows the voice's credit (`audio_credit` from `/overview`).
+- **Hangana nanjye** (`src/components/challenge/`): every finished exam offers "Hangana n’inshuti zawe" (WhatsApp, share
+  sheet, link); the link opens `/hangana/<code>`. A friend's exam on that paper shows how everyone did on its result.
+- **Driving schools**: instructors (`instructor` from `/auth/me`) get "Amatsinda yanjye" in the account menu; learners
+  join and leave classes from the profile ("Ishuri ryigisha gutwara") or a class link.
+- **Pass rates by level**: the dashboard's readiness card says how learners at the same level did in the real exam,
+  once enough of them have answered (`prediction`).
+- **After the theory exam**: lessons marked `after_theory` are listed apart on `/amasomo`.
 
 ## Sign-in links by email
 

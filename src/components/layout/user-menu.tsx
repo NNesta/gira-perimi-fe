@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, ClipboardList, LayoutDashboard, LogOut, Repeat, UserRound } from "lucide-react";
+import { Award, ClipboardList, LayoutDashboard, LogOut, Repeat, School, UserRound } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -18,6 +18,8 @@ const LINKS = [
   { href: "/ibihembo", label: "Ibihembo", icon: Award },
   { href: "/umwirondoro", label: "Umwirondoro", icon: UserRound },
 ];
+// Shown to the instructors of a driving school only.
+const TEACHING_LINK = { href: "/umwarimu", label: "Amatsinda yanjye", icon: School };
 
 export function UserMenu({ user }: { user: User }) {
   const [open, setOpen] = useState(false);
@@ -78,7 +80,7 @@ export function UserMenu({ user }: { user: User }) {
               </div>
             </div>
             <div className="p-2">
-              {LINKS.map(({ href, label, icon: Icon }) => (
+              {(user.instructor ? [TEACHING_LINK, ...LINKS] : LINKS).map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}

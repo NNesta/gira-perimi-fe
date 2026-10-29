@@ -50,6 +50,7 @@ export const config = {
     "/ikizamini/:id+",
     "/ibizamini/:path*",
     "/umwirondoro/:path*",
+    "/umwarimu/:path*",
     "/admin/:path*",
   ],
 };

@@ -2,6 +2,8 @@ import { createElement } from "react";
 import {
   ArrowLeftRight,
   BookOpen,
+  CalendarCheck,
+  Car,
   Flag,
   Footprints,
   Gauge,
@@ -24,6 +26,8 @@ import {
 const ICONS: Record<string, LucideIcon> = {
   "arrow-left-right": ArrowLeftRight,
   "book-open": BookOpen,
+  "calendar-check": CalendarCheck,
+  car: Car,
   flag: Flag,
   footprints: Footprints,
   gauge: Gauge,

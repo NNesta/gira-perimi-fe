@@ -4,6 +4,7 @@
 import { Check, X } from "lucide-react";
 import { motion } from "motion/react";
 
+import { ListenButton } from "@/components/quiz/listen-button";
 import { cn } from "@/lib/cn";
 import type { Option } from "@/lib/types";
 
@@ -59,6 +60,7 @@ export function QuestionView({
   onSelect,
   disabled = false,
   topicLabel,
+  audio,
 }: {
   number?: number;
   total?: number;
@@ -69,6 +71,8 @@ export function QuestionView({
   onSelect?: (index: number) => void;
   disabled?: boolean;
   topicLabel?: string;
+  /** "Umva": the question and its answers read aloud. */
+  audio?: string | null;
 }) {
   const imageOptions = options.some((o) => o.image);
   return (
@@ -81,6 +85,7 @@ export function QuestionView({
           </span>
         )}
         {topicLabel && <span className="rounded-full bg-surface-2 px-3 py-1 text-xs">{topicLabel}</span>}
+        <ListenButton src={audio} className="ml-auto" />
       </div>
 
       <h2 className="mt-4 font-sans text-xl font-bold leading-snug tracking-normal sm:text-[1.6rem]">{text}</h2>

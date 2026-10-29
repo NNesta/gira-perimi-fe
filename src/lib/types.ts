@@ -17,6 +17,8 @@ export type User = {
   onboarded: boolean;
   /** Has signed in with Google: name and photo come from Google. False for accounts opened with an email link. */
   google_account: boolean;
+  /** Teaches at a driving school (set by GET /auth/me only): the site links to /umwarimu. */
+  instructor?: boolean;
 };
 
 /** POST /practice/placement: the welcome quiz, saved in one go. */
@@ -41,10 +43,12 @@ export type Question = {
   image: string | null;
   options: Option[];
   topic: string;
+  /** "Umva": the question and its answers read aloud (MP3), when there is a clip. */
+  audio?: string | null;
 };
 
-/** Why the answer is right, and the article of law behind it (null when not written yet). */
-export type Explained = { explanation: string | null; law_ref: string | null };
+/** Why the answer is right, and the article of law behind it (null when not written yet), and its clip. */
+export type Explained = { explanation: string | null; law_ref: string | null; explanation_audio?: string | null };
 
 export type QuestionWithAnswer = Question & Explained & { answer: number };
 
@@ -107,6 +111,8 @@ export type LessonSummary = {
   free: boolean;
   question_count: number;
   sections: string[];
+  /** For after the theory exam (the practical test): listed apart, not in the study plan. */
+  after_theory: boolean;
   completed: boolean;
   locked: boolean;
 };
@@ -142,6 +148,8 @@ export type Overview = {
     readiness_min_average: number;
     readiness_recent_exams: number;
   };
+  /** Credit owed for the voice of the audio clips, when there are clips. */
+  audio_credit?: string | null;
 };
 
 export type ExamItem = Question &
@@ -167,6 +175,8 @@ export type Exam = {
   passed: boolean | null;
   answered: number;
   items: ExamItem[];
+  /** Set when the exam is a friend's challenge ("Hangana nanjye"). */
+  challenge_code?: string | null;
 };
 
 export type ExamSummary = {
@@ -281,6 +291,72 @@ export type Dashboard = {
   review: ReviewSummary;
   /** "Watsinze ikizamini?": the past exam date to ask about, or null. */
   outcome_question: string | null;
+  /** How learners at this level did in the real exam, once enough have answered. */
+  prediction: Prediction | null;
+};
+
+/** "At your level, X% passed": learners whose recent mock average was in [band_low, band_high). */
+export type Prediction = { band_low: number; band_high: number; reports: number; passed: number; pass_rate: number };
+
+/** GET /challenges/{code}: a friend's challenge ("Hangana nanjye"). */
+export type ChallengePlayer = { name: string; score: number; total: number; creator: boolean; you: boolean };
+export type Challenge = {
+  code: string;
+  creator_name: string;
+  creator_score: number;
+  total: number;
+  day: string;
+  players: number;
+  is_creator: boolean;
+  exam_id: string | null;
+  exam_status: "in_progress" | "completed" | null;
+  /** Everyone's result, best first: only for the author and those who finished it. */
+  standings: ChallengePlayer[] | null;
+};
+
+// ------------------------------------------------------------------ driving schools
+export type ClassSummary = {
+  id: string;
+  name: string;
+  join_code: string;
+  archived: boolean;
+  learners: number;
+  created_at: string;
+};
+export type TeachingSchool = { id: string; name: string; classes: ClassSummary[] };
+export type ClassLearner = {
+  id: string;
+  name: string;
+  email: string;
+  picture_url: string | null;
+  joined_at: string;
+  last_active_at: string | null;
+  exam_date: string | null;
+  readiness: Readiness;
+  exams_completed: number;
+  /** Topic names, weakest first. */
+  weak_topics: string[];
+};
+export type ClassDetail = {
+  id: string;
+  name: string;
+  join_code: string;
+  archived: boolean;
+  school_id: string;
+  school_name: string;
+  learners: ClassLearner[];
+  topics: { topic: string; name: string; answered: number; accuracy: number | null }[];
+};
+export type ClassPreview = { name: string; school: string };
+export type MyClass = { id: string; name: string; school: string; joined_at: string };
+export type AdminSchool = {
+  id: string;
+  name: string;
+  active: boolean;
+  created_at: string;
+  instructors: { id: string; email: string; name: string | null }[];
+  classes: number;
+  learners: number;
 };
 
 export type Admin = { id: string; email: string; name: string; last_login_at: string | null };
@@ -321,16 +397,12 @@ export type AdminUserRow = {
 
 export type Page<T> = { items: T[]; total: number; page: number; page_size: number };
 
-export type AdminUserDetail = {
+/** A learner's progress as staff see it (admins, and the instructors of their classes). */
+export type LearnerReport = {
   id: string;
   email: string;
   name: string;
   picture_url: string | null;
-  phone: string | null;
-  plan: string;
-  is_active: boolean;
-  created_at: string;
-  last_login_at: string | null;
   last_active_at: string | null;
   readiness: Readiness;
   exams: ExamStats;
@@ -343,6 +415,14 @@ export type AdminUserDetail = {
   daily_goal: number;
   streak_days: number;
   review: ReviewSummary;
+};
+
+export type AdminUserDetail = LearnerReport & {
+  phone: string | null;
+  plan: string;
+  is_active: boolean;
+  created_at: string;
+  last_login_at: string | null;
 };
 
 export type QuestionFilter = "all" | "missing" | "unreviewed" | "reviewed" | "edited";

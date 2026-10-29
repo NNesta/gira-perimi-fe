@@ -1,10 +1,11 @@
-import { BadgeCheck, ExternalLink, Hourglass } from "lucide-react";
+import { BadgeCheck, ExternalLink, Hourglass, Users } from "lucide-react";
+import Link from "next/link";
 
 import { LogoMark } from "@/components/brand/logo";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/cn";
-import { formatScore, plural } from "@/lib/format";
-import type { Readiness, User } from "@/lib/types";
+import { formatPercent, formatScore, plural } from "@/lib/format";
+import type { Prediction, Readiness, User } from "@/lib/types";
 
 function message(r: Readiness): string {
   if (r.status === "new") return "Kora ikizamini cy’igerageza cya mbere kugira ngo tumenye aho uhagaze.";
@@ -39,7 +40,16 @@ function Meter({ label, value, max, display, good }: { label: string; value: num
 }
 
 /** The learner's "readiness card": a playful licence-style card, not a replica of an official document. */
-export function ReadinessCard({ user, readiness }: { user: User; readiness: Readiness }) {
+export function ReadinessCard({
+  user,
+  readiness,
+  prediction = null,
+}: {
+  user: User;
+  readiness: Readiness;
+  /** How learners at this level did in the real exam, by their own account (only once enough have answered). */
+  prediction?: Prediction | null;
+}) {
   const ready = readiness.ready;
   return (
     <section
@@ -97,15 +107,31 @@ export function ReadinessCard({ user, readiness }: { user: User; readiness: Read
         </div>
 
         <p className="mt-6 leading-relaxed text-white/90">{message(readiness)}</p>
+        {prediction && (
+          <p className="mt-4 flex items-start gap-2.5 rounded-2xl bg-white/10 px-4 py-3 text-sm leading-relaxed text-white/90">
+            <Users className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <span>
+              Mu banyeshuri {prediction.reports} bari bafite impuzandengo iri hagati ya {formatScore(prediction.band_low)}{" "}
+              na {formatScore(prediction.band_high)}/20 nkawe,{" "}
+              <strong className="text-white">{formatPercent(prediction.pass_rate)}</strong> batsinze ikizamini nyirizina
+              (nk’uko babitubwiye).
+            </span>
+          </p>
+        )}
         {ready && (
-          <a
-            href="https://irembo.gov.rw"
-            target="_blank"
-            rel="noreferrer"
-            className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-brand-700 transition hover:bg-white/90"
-          >
-            Iyandikishe kuri Irembo <ExternalLink className="size-4" />
-          </a>
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <a
+              href="https://irembo.gov.rw"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-brand-700 transition hover:bg-white/90"
+            >
+              Iyandikishe kuri Irembo <ExternalLink className="size-4" />
+            </a>
+            <Link href="/amasomo/umunsi-w-ikizamini" className="text-sm font-bold text-white underline-offset-4 hover:underline">
+              Uko wiyandikisha, intambwe ku yindi
+            </Link>
+          </div>
         )}
         <div aria-hidden className="mt-7 h-1.5 rounded-full bg-[linear-gradient(90deg,#00a1de_0_50%,#fad201_50%_75%,#20603d_75%)]" />
       </div>

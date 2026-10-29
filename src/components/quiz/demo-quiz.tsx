@@ -143,10 +143,11 @@ export function DemoQuiz() {
             states={optionStates(question.options.length, selected, answered ? question.answer : null)}
             onSelect={choose}
             disabled={answered}
+            audio={question.audio}
           />
         </motion.div>
       </AnimatePresence>
-      {answered && <Explanation text={question.explanation} lawRef={question.law_ref} compact className="mt-5" />}
+      {answered && <Explanation text={question.explanation} lawRef={question.law_ref} audio={question.explanation_audio} compact className="mt-5" />}
       <div className="mt-6 flex min-h-12 items-center justify-between gap-4">
         <AnimatePresence>
           {answered && (

@@ -1,12 +1,14 @@
 "use client";
 
 import confetti from "canvas-confetti";
-import { CircleCheck, CircleHelp, CircleX, Clock, ExternalLink, LayoutDashboard, RotateCcw, Trophy } from "lucide-react";
+import { CircleCheck, CircleHelp, CircleX, Clock, ExternalLink, LayoutDashboard, RotateCcw, Swords, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { LogoMark } from "@/components/brand/logo";
 import { ThemeMenu } from "@/components/theme/theme-toggle";
+import { ChallengeInvite } from "@/components/challenge/challenge-invite";
+import { ChallengeStandings } from "@/components/challenge/challenge-standings";
 import { ExamStartButton } from "@/components/exam/exam-start-button";
 import { ShareResult } from "@/components/exam/share-result";
 import { Explanation } from "@/components/quiz/explanation";
@@ -15,7 +17,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { ProgressBar, ProgressRing } from "@/components/ui/progress";
 import { cn } from "@/lib/cn";
 import { formatDateTime, formatDuration, formatScore } from "@/lib/format";
-import type { Exam, Readiness, Topic } from "@/lib/types";
+import type { Challenge, Exam, Readiness, Topic } from "@/lib/types";
 
 type Filter = "byose" | "nabi" | "neza" | "ntasubije";
 
@@ -37,7 +39,18 @@ function celebrate() {
   })();
 }
 
-export function ExamResult({ exam, readiness, topics }: { exam: Exam; readiness: Readiness; topics: Topic[] }) {
+export function ExamResult({
+  exam,
+  readiness,
+  topics,
+  challenge = null,
+}: {
+  exam: Exam;
+  readiness: Readiness;
+  topics: Topic[];
+  /** When the exam was a friend's challenge: how everyone did on the same paper. */
+  challenge?: Challenge | null;
+}) {
   const [filter, setFilter] = useState<Filter>("byose");
   const score = exam.score ?? 0;
   const passed = !!exam.passed;
@@ -150,7 +163,24 @@ export function ExamResult({ exam, readiness, topics }: { exam: Exam; readiness:
           </div>
         </section>
 
+        {challenge?.standings && (
+          <section className="card mt-6 p-6 sm:p-8">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="flex items-center gap-2 text-xl font-extrabold">
+                <Swords className="size-5 text-sun-500" aria-hidden /> Wahanganye na {challenge.creator_name}
+              </h2>
+              <Link href={`/hangana/${challenge.code}`} className="text-sm font-semibold text-brand-600 hover:underline dark:text-brand-300">
+                Reba umukino
+              </Link>
+            </div>
+            <div className="mt-4">
+              <ChallengeStandings players={challenge.standings} passMark={exam.pass_mark} />
+            </div>
+          </section>
+        )}
+
         {passed && <ShareResult examId={exam.id} score={score} total={exam.total} className="mt-6" />}
+        <ChallengeInvite examId={exam.id} score={score} total={exam.total} className="mt-6" />
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_22rem]">
           <section className="card p-6 sm:p-8">
@@ -251,11 +281,12 @@ export function ExamResult({ exam, readiness, topics }: { exam: Exam; readiness:
                   states={optionStates(item.options.length, item.selected, item.answer)}
                   disabled
                   topicLabel={topicName(item.topic)}
+                  audio={item.audio}
                 />
                 {item.selected === null && (
                   <p className="mt-4 text-sm font-semibold text-sun-700 dark:text-sun-300">Iki kibazo ntiwagisubije.</p>
                 )}
-                <Explanation text={item.explanation} lawRef={item.law_ref} compact className="mt-4" />
+                <Explanation text={item.explanation} lawRef={item.law_ref} audio={item.explanation_audio} compact className="mt-4" />
               </li>
             ))}
           </ol>

@@ -385,6 +385,7 @@ export function ExamRunner({ exam }: { exam: Exam }) {
                 options={item.options}
                 states={optionStates(item.options.length, answers[current], null)}
                 onSelect={select}
+                audio={item.audio}
               />
             </motion.div>
           </AnimatePresence>

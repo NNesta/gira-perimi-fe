@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Lightbulb, LogOut, MessageSquareQuote, Users } from "lucide-react";
+import { LayoutDashboard, Lightbulb, LogOut, MessageSquareQuote, School, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -13,6 +13,7 @@ const LINKS = [
   { href: "/admin/abanyeshuri", label: "Abanyeshuri", icon: Users },
   { href: "/admin/ibisobanuro", label: "Ibisobanuro", icon: Lightbulb },
   { href: "/admin/ubuhamya", label: "Ubuhamya", icon: MessageSquareQuote },
+  { href: "/admin/amashuri", label: "Amashuri", icon: School },
 ];
 
 export function AdminNavView({ pathname, vertical = true }: { pathname: string; vertical?: boolean }) {

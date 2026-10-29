@@ -226,7 +226,7 @@ export function PracticeSession({
                     <CircleCheck className="mt-0.5 size-4 shrink-0" /> Igisubizo cy’ukuri: {LETTERS[q.answer]}){" "}
                     {q.options[q.answer]?.text || "(ishusho)"}
                   </p>
-                  <Explanation text={q.explanation} lawRef={q.law_ref} compact className="mt-3" />
+                  <Explanation text={q.explanation} lawRef={q.law_ref} audio={q.explanation_audio} compact className="mt-3" />
                 </li>
               ))}
             </ul>
@@ -290,6 +290,7 @@ export function PracticeSession({
               onSelect={choose}
               disabled={answered}
               topicLabel={topicName(question!.topic)}
+              audio={question!.audio}
             />
           </motion.div>
         </AnimatePresence>
@@ -324,7 +325,7 @@ export function PracticeSession({
                   {index + 1 >= set.questions.length ? "Reba uko wakoze" : "Ibikurikira"} <ArrowRight className="size-4" />
                 </Button>
               </div>
-              <Explanation text={question!.explanation} lawRef={question!.law_ref} />
+              <Explanation text={question!.explanation} lawRef={question!.law_ref} audio={question!.explanation_audio} />
               <Button onClick={next} size="lg" className="w-full sm:hidden">
                 {index + 1 >= set.questions.length ? "Reba uko wakoze" : "Ibikurikira"} <ArrowRight className="size-4" />
               </Button>
