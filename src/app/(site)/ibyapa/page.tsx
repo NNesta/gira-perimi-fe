@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { Gamepad2 } from "lucide-react";
 import { Suspense } from "react";
 
 import { SignsExplorer } from "@/components/signs/signs-explorer";
+import { ButtonLink } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { serverFetch } from "@/lib/api-server";
@@ -51,7 +53,11 @@ export default function SignsPage() {
         eyebrow="Ibyapa byo ku muhanda"
         title="Menya buri cyapa n’icyo kigusaba"
         description="Ibyapa n’ibimenyetso 166 byo mu iteka rigenga umuhanda, bigabanyijemo ibyiciro. Kanda ku cyapa urebe igisobanuro cyacyo, cyangwa witoze ukoresheje amakarita yo kwibuka."
-      />
+      >
+        <ButtonLink href="/imyitozo/soma-icyapa" variant="sun">
+          <Gamepad2 className="size-4" /> Kina “Soma icyapa!”
+        </ButtonLink>
+      </PageHeader>
       <div className="container-page pb-12">
         <Suspense fallback={<SignsSkeleton />}>
           <Signs />

@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/site";
 import type { LessonSummary } from "@/lib/types";
 
 const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
-const PUBLIC_PAGES = ["/", "/amasomo", "/ibyapa", "/ikizamini", "/imyitozo/ninde-utambuka"];
+const PUBLIC_PAGES = ["/", "/amasomo", "/ibyapa", "/ikizamini", "/imyitozo/ninde-utambuka", "/imyitozo/soma-icyapa"];
 
 async function lessonSlugs(): Promise<string[]> {
   try {

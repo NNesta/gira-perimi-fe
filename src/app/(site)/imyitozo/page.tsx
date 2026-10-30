@@ -1,4 +1,4 @@
-import { ArrowRight, History, Repeat, Search, Split, type LucideIcon } from "lucide-react";
+import { ArrowRight, History, Repeat, Search, Signpost, Split, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -16,7 +16,20 @@ export const metadata: Metadata = {
   description: "Witoze ibibazo by’ikizamini cy’amategeko y’umuhanda ukurikije ibice, urebe ako kanya igisubizo cy’ukuri.",
 };
 
-const TOOLS: { href: "/imyitozo/ninde-utambuka" | "/imyitozo/amakosa" | "/imyitozo/shakisha"; icon: LucideIcon; title: string; text: string; tone: string }[] = [
+const TOOLS: {
+  href: "/imyitozo/soma-icyapa" | "/imyitozo/ninde-utambuka" | "/imyitozo/amakosa" | "/imyitozo/shakisha";
+  icon: LucideIcon;
+  title: string;
+  text: string;
+  tone: string;
+}[] = [
+  {
+    href: "/imyitozo/soma-icyapa",
+    icon: Signpost,
+    title: "Soma icyapa!",
+    text: "Umukino: menya icyapa mbere y’uko imodoka ikigeraho, uce agahigo kawe.",
+    tone: "bg-sun-500",
+  },
   {
     href: "/imyitozo/ninde-utambuka",
     icon: Split,
@@ -42,7 +55,7 @@ const TOOLS: { href: "/imyitozo/ninde-utambuka" | "/imyitozo/amakosa" | "/imyito
 
 function Tools() {
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {TOOLS.map((tool) => (
         <Link key={tool.href} href={tool.href} className="card group flex items-start gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-lift">
           <span className={`grid size-11 shrink-0 place-items-center rounded-2xl text-white ${tool.tone}`}>

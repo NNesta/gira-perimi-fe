@@ -24,8 +24,8 @@ const PRIVATE = [
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    // The right-of-way scenes are public even though the rest of /imyitozo is not (the longer rule wins).
-    rules: { userAgent: "*", allow: ["/", "/imyitozo/ninde-utambuka"], disallow: PRIVATE },
+    // The right-of-way scenes and the sign game are public even though the rest of /imyitozo is not (the longer rule wins).
+    rules: { userAgent: "*", allow: ["/", "/imyitozo/ninde-utambuka", "/imyitozo/soma-icyapa"], disallow: PRIVATE },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }
