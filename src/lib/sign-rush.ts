@@ -8,9 +8,9 @@ export const OPTION_COUNT = 4;
 /** A sign named wrongly comes back this many rounds later, while its meaning is still fresh. */
 export const RETRY_AFTER = 5;
 
-/** Seconds a sign takes to reach the car: generous at first, a little less every round, never under 4. */
+/** Seconds a sign takes to reach the car: generous at first, a little less every round, never under 16. */
 export function roundSeconds(round: number): number {
-  return Math.max(4, 9 - 0.3 * round);
+  return Math.max(16, 36 - 1.2 * round);
 }
 
 /** Points multiplier for a run of right answers in a row: ×2 from 3, ×3 from 6, ×4 from 10. */
