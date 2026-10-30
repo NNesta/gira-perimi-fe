@@ -64,7 +64,7 @@ function Phone({ screen }: { screen: Screen }) {
 /** "Reba imbere": the product itself, as a learner sees it on a phone. */
 export function ProductScreens() {
   return (
-    <section className="py-20 sm:py-28">
+    <section className="pb-4 pt-20 sm:pt-28">
       <div className="container-page">
         <Reveal>
           <SectionHeading

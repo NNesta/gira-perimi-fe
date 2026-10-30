@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -37,13 +38,16 @@ export function MobileNavView({ pathname }: { pathname: string }) {
                   active ? "text-brand-600 dark:text-brand-300" : "text-muted",
                 )}
               >
-                <span
-                  className={cn(
-                    "grid h-8 w-14 place-items-center rounded-full transition-all",
-                    active && "bg-brand-100 dark:bg-brand-500/20",
+                <span className="relative grid h-8 w-14 place-items-center">
+                  {active && (
+                    // Shared layoutId: the pill slides to the tab that was tapped.
+                    <motion.span
+                      layoutId="tab-pill"
+                      transition={{ type: "spring", stiffness: 480, damping: 36 }}
+                      className="absolute inset-0 rounded-full bg-brand-100 dark:bg-brand-500/20"
+                    />
                   )}
-                >
-                  <Icon className="size-[1.2rem]" aria-hidden />
+                  <Icon className={cn("relative size-[1.2rem] transition-transform", active && "scale-110")} aria-hidden />
                 </span>
                 {label}
               </Link>

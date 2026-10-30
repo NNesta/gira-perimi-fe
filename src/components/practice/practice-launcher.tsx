@@ -17,6 +17,14 @@ const MODES: { id: PracticeMode; label: string; hint: string; icon: typeof Shuff
 
 const COUNTS = [10, 20, 30];
 
+/** Accuracy at a glance: below the 60% pass mark, close to it, or comfortably above (15/20 = 75%). */
+function accuracyTone(accuracy: number | null | undefined): string {
+  if (accuracy === null || accuracy === undefined) return "text-muted";
+  if (accuracy < 0.6) return "text-signal-600 dark:text-signal-400";
+  if (accuracy < 0.75) return "text-sun-700 dark:text-sun-300";
+  return "text-brand-700 dark:text-brand-300";
+}
+
 export function PracticeLauncher({ topics, mastery }: { topics: Topic[]; mastery: TopicMastery[] }) {
   const [mode, setMode] = useState<PracticeMode>("random");
   const [count, setCount] = useState(10);
@@ -105,24 +113,35 @@ export function PracticeLauncher({ topics, mastery }: { topics: Topic[]; mastery
                 <Link
                   href={href(topic.id)}
                   className={cn(
-                    "card group relative flex h-full flex-col overflow-hidden bg-gradient-to-br to-transparent p-6 transition duration-300 hover:-translate-y-1 hover:shadow-lift",
+                    "card group relative flex h-full flex-col overflow-hidden bg-gradient-to-br to-transparent p-5 transition duration-300 hover:-translate-y-1 hover:shadow-lift sm:p-6",
                     tone.soft,
                   )}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <span className={cn("grid size-12 place-items-center rounded-2xl text-white shadow-soft", tone.bar)}>
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={cn(
+                        "grid size-12 shrink-0 place-items-center rounded-2xl text-white shadow-soft transition group-hover:scale-105",
+                        tone.bar,
+                      )}
+                    >
                       <DynamicIcon name={topic.icon} className="size-6" />
                     </span>
-                    <span className="rounded-full bg-surface px-3 py-1 text-xs font-bold text-muted ring-1 ring-line">
-                      {plural(topic.question_count, "ikibazo", "ibibazo")}
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-lg font-bold leading-snug">{topic.name}</h3>
+                      <p className="text-xs font-bold text-muted">{plural(topic.question_count, "ikibazo", "ibibazo")}</p>
+                    </div>
+                    <ArrowRight
+                      className="size-5 shrink-0 text-muted transition group-hover:translate-x-1 group-hover:text-ink"
+                      aria-hidden
+                    />
                   </div>
-                  <h3 className="mt-5 text-lg font-bold">{topic.name}</h3>
-                  <p className="mt-1 flex-1 text-sm leading-relaxed text-muted">{topic.description}</p>
-                  <div className="mt-5 space-y-2">
+                  <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{topic.description}</p>
+                  <div className="mt-4 space-y-2 sm:mt-5">
                     <div className="flex items-center justify-between text-xs font-semibold text-muted">
                       <span>Ibyo umaze kubona: {stats?.seen ?? 0}</span>
-                      <span>Ukuri: {formatPercent(stats?.accuracy)}</span>
+                      <span>
+                        Ukuri: <span className={cn("font-bold", accuracyTone(stats?.accuracy))}>{formatPercent(stats?.accuracy)}</span>
+                      </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-surface-2">
                       <div className={cn("h-full rounded-full", tone.bar)} style={{ width: `${Math.round(seenRatio * 100)}%` }} />

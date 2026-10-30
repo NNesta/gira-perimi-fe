@@ -13,20 +13,21 @@ export type BarRow = {
 /**
  * Horizontal bars for nominal categories: one hue for every bar (identity is the label, not the
  * colour), 12px thick with a 4px rounded data end, value at the tip, details on hover/focus.
+ * On phones the bar takes a line of its own, under the label and value, so it keeps a readable length.
  */
 export function BarList({ rows, label }: { rows: BarRow[]; label: string }) {
   return (
-    <ul aria-label={label} className="space-y-3.5">
+    <ul aria-label={label} className="space-y-4 sm:space-y-3.5">
       {rows.map((row) => (
         <li key={row.key} className="group relative">
           <div
             tabIndex={0}
-            className="grid grid-cols-[minmax(0,9.5rem)_1fr_auto] items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ocean-400 sm:grid-cols-[minmax(0,13rem)_1fr_auto]"
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ocean-400 sm:grid-cols-[minmax(0,13rem)_1fr_auto]"
           >
             <span className="truncate text-sm font-semibold text-ink-soft" title={row.label}>
               {row.label}
             </span>
-            <span className="relative h-3 rounded-r bg-surface-2">
+            <span className="relative col-span-2 row-start-2 h-3 rounded-r bg-surface-2 sm:col-span-1 sm:row-start-auto">
               {row.ratio !== null && (
                 <span
                   className="absolute inset-y-0 left-0 rounded-r-[4px] bg-chart-1 transition-[width] duration-700"

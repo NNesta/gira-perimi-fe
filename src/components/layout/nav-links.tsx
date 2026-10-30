@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -30,7 +31,12 @@ export function NavLinksView({ pathname }: { pathname: string }) {
             <Icon className="size-4" aria-hidden />
             {label}
             {active && (
-              <span className="absolute inset-x-3 -bottom-[13px] h-[3px] rounded-full bg-gradient-to-r from-brand-400 to-ocean-400" />
+              // Shared layoutId: the underline slides from the old section to the new one.
+              <motion.span
+                layoutId="nav-underline"
+                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                className="absolute inset-x-3 -bottom-[13px] h-[3px] rounded-full bg-gradient-to-r from-brand-400 to-ocean-400"
+              />
             )}
           </Link>
         );

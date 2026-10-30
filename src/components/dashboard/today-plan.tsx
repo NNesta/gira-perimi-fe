@@ -47,8 +47,15 @@ function Task({
   action?: string;
   children?: React.ReactNode;
 }) {
+  const open = Boolean(href && action && !done);
   return (
-    <li className={cn("flex items-center gap-3.5 rounded-2xl border p-3.5 transition", done ? "border-brand-200/70 bg-brand-50/60 dark:border-brand-400/20 dark:bg-brand-500/10" : "border-line")}>
+    <li
+      className={cn(
+        "relative flex items-center gap-3.5 rounded-2xl border p-3.5 transition",
+        done ? "border-brand-200/70 bg-brand-50/60 dark:border-brand-400/20 dark:bg-brand-500/10" : "border-line",
+        open && "hover:border-brand-300 hover:bg-surface-2/60 dark:hover:border-brand-400/40",
+      )}
+    >
       <span
         className={cn(
           "grid size-10 shrink-0 place-items-center rounded-xl",
@@ -62,12 +69,13 @@ function Task({
         {sub && <span className="block text-sm text-muted">{sub}</span>}
         {children}
       </span>
-      {href && action && !done && (
+      {open && href && (
+        // The link covers the whole row (after:inset-0), so the task is easy to tap; phones show only the arrow.
         <Link
           href={href}
-          className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-brand-50 px-3 py-2 text-sm font-bold text-brand-700 transition hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25"
+          className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-brand-50 p-2 text-sm font-bold text-brand-700 transition after:absolute after:inset-0 after:rounded-2xl hover:bg-brand-100 sm:px-3 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25"
         >
-          {action} <ArrowRight className="size-4" aria-hidden />
+          <span className="sr-only sm:not-sr-only">{action}</span> <ArrowRight className="size-4" aria-hidden />
         </Link>
       )}
     </li>

@@ -48,15 +48,23 @@ export function PageHeader({
         aria-hidden
         className="absolute -right-24 -top-24 size-72 rounded-full bg-gradient-to-br from-brand-300/40 to-ocean-300/30 blur-3xl"
       />
-      <div className="container-page relative py-10 sm:py-14">
+      <div
+        aria-hidden
+        className="absolute -bottom-32 left-1/4 size-64 rounded-full bg-gradient-to-tr from-sun-200/30 to-transparent blur-3xl dark:from-sun-300/10"
+      />
+      {/* Tighter on phones, so the page's own content starts in the first screen. */}
+      <div className="container-page relative py-7 sm:py-14">
         {eyebrow && (
-          <p className="mb-3 text-sm font-bold uppercase tracking-[0.14em] text-brand-600 dark:text-brand-300">
+          <p className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-600 sm:mb-3 sm:text-sm dark:text-brand-300">
+            <span aria-hidden className="h-0.5 w-5 rounded-full bg-gradient-to-r from-brand-400 to-ocean-400" />
             {eyebrow}
           </p>
         )}
-        <h1 className="max-w-3xl text-3xl font-extrabold leading-tight sm:text-5xl">{title}</h1>
-        {description && <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{description}</p>}
-        {children && <div className="mt-6">{children}</div>}
+        <h1 className="max-w-3xl text-[1.85rem] font-extrabold leading-tight sm:text-5xl">{title}</h1>
+        {description && (
+          <p className="mt-3 max-w-2xl leading-relaxed text-muted sm:mt-4 sm:text-lg">{description}</p>
+        )}
+        {children && <div className="mt-5 sm:mt-6">{children}</div>}
       </div>
     </header>
   );

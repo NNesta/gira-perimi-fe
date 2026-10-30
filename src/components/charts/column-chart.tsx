@@ -109,7 +109,8 @@ export function ColumnChart({
                   className="transition-opacity"
                 />
               )}
-              {((i % every === 0 && data.length - 1 - i >= Math.ceil(every / 2)) || i === data.length - 1) && (
+              {/* The last label is end-aligned, so the one before it needs a full step of room or the two collide. */}
+              {((i % every === 0 && data.length - 1 - i >= every) || i === data.length - 1) && (
                 <text
                   x={i === data.length - 1 ? PAD.left + slot * (i + 1) : cx}
                   y={height - 7}

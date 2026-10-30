@@ -8,14 +8,29 @@ import {
   ClipboardCheck,
   Gift,
   Layers,
-  Smartphone,
+  Plus,
   Sparkles,
+  Split,
   Target,
   Timer,
   Trophy,
+  Volume2,
+  WifiOff,
+  type LucideIcon,
 } from "lucide-react";
-import { Suspense } from "react";
+import Link from "next/link";
+import { type ReactNode, Suspense } from "react";
 
+import {
+  AudioVisual,
+  ExamVisual,
+  FreeVisual,
+  IntersectionVisual,
+  OfflineVisual,
+  ProgressVisual,
+  QuestionVisual,
+  SignsVisual,
+} from "@/components/home/feature-visuals";
 import { ProductScreens } from "@/components/home/product-screens";
 import { RealResults } from "@/components/home/real-results";
 import { HeroScene } from "@/components/illustrations/hero-scene";
@@ -25,8 +40,10 @@ import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getSessionUser } from "@/lib/api-server";
+import { cn } from "@/lib/cn";
 import { formatScore } from "@/lib/format";
 import { getOverview } from "@/lib/overview";
+import { SCENARIOS } from "@/lib/scenarios";
 import type { Overview } from "@/lib/types";
 
 function Counts({ questions, lessons, signs }: Pick<Overview, "questions" | "lessons" | "signs">) {
@@ -84,40 +101,120 @@ const steps = (o: Overview) => [
   },
 ];
 
-const features = (o: Overview) => [
+type Feature = {
+  icon: LucideIcon;
+  title: string;
+  text: string;
+  visual: ReactNode;
+  /** Public page that shows the feature; the whole card links there. */
+  href?: string;
+  /** First card: two columns wide, its drawing beside the text. */
+  wide?: boolean;
+  /** Grid placement, e.g. to fill the last row of the two-column (tablet) grid. */
+  className?: string;
+};
+
+const features = (o: Overview): Feature[] => [
   {
     icon: ClipboardCheck,
     title: "Ikizamini kimeze nk’icya nyacyo",
     text: `Isaha ibara iminota ${o.exam.duration_minutes}, ibibazo ${o.exam.question_count} bitoranywa ku buryo butunguranye, amanota ${o.exam.pass_mark} kugira ngo utsinde. Ikizamini kirangira ubwacyo iyo igihe kirangiye.`,
-    className: "md:col-span-2",
+    visual: <ExamVisual />,
+    href: "/ikizamini",
+    wide: true,
   },
   {
     icon: ChartLine,
     title: "Kurikirana aho ugeze",
     text: "Impuzandengo yawe, amanota yawe meza, n’ibice ukwiye kongeramo imbaraga.",
+    visual: <ProgressVisual />,
   },
   {
     icon: Layers,
     title: "Ibyapa byose",
     text: `Ibyapa ${o.signs} by’iteka rigenga umuhanda, n’amakarita yo kubifata mu mutwe.`,
+    visual: <SignsVisual />,
+    href: "/ibyapa",
+  },
+  {
+    icon: Volume2,
+    title: "Umva ibibazo",
+    text: "Buri kibazo n’igisobanuro cyacyo bisomwa mu Kinyarwanda: kanda “Umva”, wumve aho kubisoma.",
+    visual: <AudioVisual />,
+    href: "#gerageza",
+  },
+  {
+    icon: Split,
+    title: "Ninde utambuka mbere?",
+    text: `Amasangano ${SCENARIOS.length} ashushanyije: kanda ku kinyabiziga gitambuka mbere, urebe uko bigenda.`,
+    visual: <IntersectionVisual />,
+    href: "/imyitozo/ninde-utambuka",
+  },
+  {
+    icon: WifiOff,
+    title: "Wiga nta interineti",
+    text: "Bika ibibazo n’amasomo kuri telefone yawe, ukomeze wige n’aho interineti itagera.",
+    visual: <OfflineVisual questions={o.questions} />,
   },
   {
     icon: BadgeCheck,
     title: "Ibibazo nyabyo",
     text: `Ibibazo ${o.questions} byo mu gitabo cy’ibibazo by’ikizamini, uko byakabaye, n’amashusho yabyo.`,
-  },
-  {
-    icon: Smartphone,
-    title: "Kuri telefone no kuri mudasobwa",
-    text: "Wiga aho uri hose: urubuga rukora neza kuri telefone, tablet na mudasobwa.",
+    visual: <QuestionVisual />,
   },
   {
     icon: Gift,
     title: "Ubuntu",
     text: "Ubu ibintu byose ni ubuntu. Iyandikishe ukoresheje Gmail cyangwa imeyili yawe mu masegonda make.",
-    className: "md:col-span-3",
+    visual: <FreeVisual />,
+    className: "md:col-span-2 lg:col-span-1",
   },
 ];
+
+function FeatureCard({ feature }: { feature: Feature }) {
+  const { icon: Icon, title, text, visual, href, wide } = feature;
+  const body = (
+    <>
+      <div
+        aria-hidden
+        className={cn(
+          "relative grid h-44 place-items-center overflow-hidden rounded-2xl bg-surface-2/70 px-4 ring-1 ring-inset ring-line",
+          wide && "md:order-last md:h-auto md:min-h-48 md:w-[52%] md:shrink-0",
+        )}
+      >
+        <div className="bg-grid absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_75%)]" />
+        <div className="relative grid h-full w-full place-items-center py-4">{visual}</div>
+      </div>
+      <div className={cn("flex flex-1 flex-col", wide && "md:justify-center md:py-2")}>
+        <h3 className="flex items-center gap-2.5 text-lg font-bold sm:text-xl">
+          <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:ring-brand-400/20">
+            <Icon className="size-4" aria-hidden />
+          </span>
+          {title}
+          {href && (
+            <ArrowRight
+              className="ml-auto size-4 shrink-0 text-muted transition group-hover:translate-x-1 group-hover:text-brand-600 dark:group-hover:text-brand-300"
+              aria-hidden
+            />
+          )}
+        </h3>
+        <p className="mt-2 leading-relaxed text-muted">{text}</p>
+      </div>
+    </>
+  );
+  const className = cn(
+    "card group flex h-full flex-col gap-5 p-4 transition duration-300 sm:p-5",
+    wide && "md:flex-row md:gap-7 md:p-6",
+    href && "hover:-translate-y-1 hover:border-brand-300 hover:shadow-lift dark:hover:border-brand-400/40",
+  );
+  return href ? (
+    <Link href={href} className={className}>
+      {body}
+    </Link>
+  ) : (
+    <div className={className}>{body}</div>
+  );
+}
 
 const MARQUEE_SIGNS = [
   "b-2a", "a-1a", "c-14", "d-3", "b-1", "a-10", "c-1", "e-11", "a-25", "c-12", "d-1a-4", "b-3",
@@ -366,16 +463,10 @@ export default async function HomePage() {
             title="Byose ukeneye kugira ngo utsinde, ahantu hamwe"
           />
         </Reveal>
-        <div className="mt-14 grid gap-5 md:grid-cols-3">
+        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {features(overview).map((feature, i) => (
-            <Reveal key={feature.title} delay={(i % 3) * 0.06} className={feature.className}>
-              <div className="card group h-full p-7 transition duration-300 hover:-translate-y-1 hover:shadow-lift">
-                <span className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-50 to-ocean-50 text-brand-600 ring-1 ring-brand-100 transition group-hover:scale-110 dark:from-brand-500/15 dark:to-ocean-500/10 dark:text-brand-300 dark:ring-brand-400/20">
-                  <feature.icon className="size-6" />
-                </span>
-                <h3 className="mt-5 text-xl font-bold">{feature.title}</h3>
-                <p className="mt-2 leading-relaxed text-muted">{feature.text}</p>
-              </div>
+            <Reveal key={feature.title} delay={(i % 3) * 0.06} className={cn(feature.wide && "md:col-span-2", feature.className)}>
+              <FeatureCard feature={feature} />
             </Reveal>
           ))}
         </div>
@@ -468,11 +559,11 @@ export default async function HomePage() {
           <div className="space-y-3">
             {faq(overview).map((item, i) => (
               <Reveal key={item.q} delay={i * 0.04}>
-                <details className="card group p-0 [&_summary::-webkit-details-marker]:hidden">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-lg font-bold sm:p-6">
+                <details className="card group p-0 transition-shadow open:shadow-lift [&_summary::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-lg font-bold transition-colors hover:text-brand-700 sm:p-6 dark:hover:text-brand-300">
                     {item.q}
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-surface-2 text-xl transition group-open:rotate-45">
-                      +
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-surface-2 text-ink-soft transition duration-300 group-open:rotate-45 group-open:bg-brand-500 group-open:text-white">
+                      <Plus className="size-4" aria-hidden />
                     </span>
                   </summary>
                   <p className="px-5 pb-6 leading-relaxed text-muted sm:px-6">{item.a}</p>

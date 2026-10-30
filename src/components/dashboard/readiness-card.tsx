@@ -78,8 +78,19 @@ export function ReadinessCard({
         </div>
 
         <div className="mt-6 flex items-center gap-4">
-          <Avatar name={user.name} src={user.picture_url} size={72} className="ring-4 ring-white/25" />
-          <div className="min-w-0">
+          <div className="relative shrink-0">
+            <Avatar name={user.name} src={user.picture_url} size={72} className="ring-4 ring-white/25" />
+            {/* Phones: the stamp sits on the photo, so it never covers the name. */}
+            {ready && (
+              <span
+                aria-hidden
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 rotate-[-10deg] rounded-md border-2 border-sun-300 bg-brand-700/85 px-1.5 font-display text-[0.6rem] font-extrabold tracking-wider text-sun-300 sm:hidden"
+              >
+                WITEGUYE
+              </span>
+            )}
+          </div>
+          <div className={cn("min-w-0", ready && "sm:pr-44")}>
             <p className="truncate font-display text-2xl font-extrabold">{user.name}</p>
             <p className="truncate text-sm text-white/70">{user.email}</p>
           </div>
@@ -138,7 +149,7 @@ export function ReadinessCard({
       {ready && (
         <span
           aria-hidden
-          className="absolute right-6 top-24 rotate-[-12deg] rounded-xl border-4 border-sun-300 px-3 py-1 font-display text-2xl font-extrabold tracking-wider text-sun-300 opacity-90 sm:right-10"
+          className="absolute right-10 top-24 hidden rotate-[-12deg] rounded-xl border-4 border-sun-300 px-3 py-1 font-display text-2xl font-extrabold tracking-wider text-sun-300 opacity-90 sm:block"
         >
           WITEGUYE
         </span>

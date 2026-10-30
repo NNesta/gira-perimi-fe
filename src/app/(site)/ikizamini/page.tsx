@@ -61,9 +61,10 @@ async function StartPanel() {
           { label: "Impuzandengo", value: formatScore(exams.average) },
           { label: "Amanota meza", value: formatScore(exams.best) },
         ].map((item) => (
-          <div key={item.label} className="rounded-2xl bg-surface-2 p-3 text-center">
+          <div key={item.label} className="rounded-2xl bg-surface-2 px-1.5 py-3 text-center sm:p-3">
             <p className="font-display text-2xl font-extrabold">{item.value}</p>
-            <p className="text-xs font-semibold text-muted">{item.label}</p>
+            {/* "Impuzandengo" is one long word: smaller on phones so it stays inside its tile. */}
+            <p className="text-[0.7rem] font-semibold text-muted sm:text-xs">{item.label}</p>
           </div>
         ))}
       </div>
@@ -98,18 +99,21 @@ export default async function ExamIntroPage() {
   return (
     <section className="relative overflow-hidden">
       <div aria-hidden className="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black_25%,transparent_70%)]" />
-      <div className="container-page relative grid gap-10 py-12 sm:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-        <div>
+      {/* Phones: intro, then the start card, then the rules. From lg: intro and rules on the left, the card beside them. */}
+      <div className="container-page relative grid gap-8 py-8 sm:gap-10 sm:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+        <div className="lg:col-start-1 lg:row-start-1">
           <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand-600 dark:text-brand-300">Ikizamini cy’igerageza</p>
-          <h1 className="mt-3 text-4xl font-extrabold leading-tight sm:text-5xl">Isuzume nk’uri kwa Polisi</h1>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
+          <h1 className="mt-3 text-[2.1rem] font-extrabold leading-tight sm:text-5xl">Isuzume nk’uri kwa Polisi</h1>
+          <p className="mt-4 max-w-2xl leading-relaxed text-muted sm:text-lg">
             Ikizamini cy’igerageza gikurikiza imiterere y’ikizamini cy’uruhushya rw’agateganyo. Gikore inshuro nyinshi
             kugeza amanota yawe ahamye hejuru ya {formatScore(exam.readiness_min_average)}/20.
           </p>
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2">
+        </div>
+        <div className="lg:col-start-1 lg:row-start-2">
+          <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4">
             {rules(overview).map(({ icon: Icon, title, text }) => (
-              <li key={title} className="card flex gap-4 p-5">
-                <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-asphalt text-sun-300 dark:bg-white/10">
+              <li key={title} className="card flex gap-4 p-4 sm:p-5">
+                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-asphalt text-sun-300 sm:size-12 dark:bg-white/10">
                   <Icon className="size-6" />
                 </span>
                 <span>
@@ -130,7 +134,7 @@ export default async function ExamIntroPage() {
           </div>
         </div>
 
-        <div className="card relative overflow-hidden p-6 sm:p-8 lg:sticky lg:top-24">
+        <div className="card relative row-start-2 overflow-hidden p-6 sm:p-8 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <div aria-hidden className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-brand-400 via-ocean-400 to-sun-300" />
           <p className="flex items-center gap-2 text-sm font-bold text-muted">
             <ShieldCheck className="size-4 text-brand-500" /> Mbere yo gutangira
