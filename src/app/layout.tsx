@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
+import { Suspense } from "react";
 
+import { HistoryTracker } from "@/components/layout/back-button";
 import { ServiceWorker } from "@/components/pwa/service-worker";
 import { INSTALL_PROMPT_SCRIPT } from "@/lib/pwa";
 import { SITE_URL } from "@/lib/site";
@@ -74,6 +76,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-dvh">
         {children}
+        <Suspense>
+          <HistoryTracker />
+        </Suspense>
         <ServiceWorker />
       </body>
     </html>

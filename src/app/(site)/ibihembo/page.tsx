@@ -64,6 +64,7 @@ export default function BadgesPage() {
   return (
     <>
       <PageHeader
+        back="/ikibaho"
         eyebrow="Ibihembo"
         title="Ibihembo byawe"
         description="Buri gihembo kigaragaza intambwe watereye: ibizamini, iminsi wize udasiba, ibibazo wasubije n’amasomo warangije."

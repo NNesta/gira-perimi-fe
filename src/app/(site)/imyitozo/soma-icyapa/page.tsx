@@ -40,6 +40,7 @@ export default function SignGamePage() {
   return (
     <>
       <PageHeader
+        back="/imyitozo"
         eyebrow="Umukino"
         title="Soma icyapa!"
         description="Ibyapa biza imbere y’imodoka yawe. Hitamo icyo buri cyapa gisobanura mbere y’uko ukigeraho: uko usubiza vuba, ni ko amanota yiyongera."

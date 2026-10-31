@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { BackButton } from "@/components/layout/back-button";
 import { cn } from "@/lib/cn";
 
 export function SectionHeading({
@@ -33,12 +34,15 @@ export function PageHeader({
   title,
   description,
   children,
+  back,
   className,
 }: {
   eyebrow?: ReactNode;
   title: ReactNode;
   description?: ReactNode;
   children?: ReactNode;
+  /** Where "Subira inyuma" goes when there is no page to go back to (a shared link, a fresh tab). */
+  back?: string;
   className?: string;
 }) {
   return (
@@ -54,6 +58,7 @@ export function PageHeader({
       />
       {/* Tighter on phones, so the page's own content starts in the first screen. */}
       <div className="container-page relative py-7 sm:py-14">
+        {back && <BackButton href={back} className="mb-4 sm:mb-6" />}
         {eyebrow && (
           <p className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-600 sm:mb-3 sm:text-sm dark:text-brand-300">
             <span aria-hidden className="h-0.5 w-5 rounded-full bg-gradient-to-r from-brand-400 to-ocean-400" />

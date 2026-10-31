@@ -50,6 +50,7 @@ export default function SignsPage() {
   return (
     <>
       <PageHeader
+        back="/"
         eyebrow="Ibyapa byo ku muhanda"
         title="Menya buri cyapa n’icyo kigusaba"
         description="Ibyapa n’ibimenyetso 166 byo mu iteka rigenga umuhanda, bigabanyijemo ibyiciro. Kanda ku cyapa urebe igisobanuro cyacyo, cyangwa witoze ukoresheje amakarita yo kwibuka."

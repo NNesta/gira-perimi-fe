@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Phones scrolling down: header and tab bar slide out of the way (ScrollChrome sets the attribute). */
+@custom-variant chrome-hidden (html[data-chrome="hidden"] &);
+
 /* `dark:` follows the visitor's choice: data-theme on <html> is "system" | "light" | "dark". */
 @custom-variant dark {
   &:where([data-theme="dark"], [data-theme="dark"] *) {

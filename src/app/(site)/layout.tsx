@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { MobileNav, MobileNavView } from "@/components/layout/mobile-nav";
+import { ScrollChrome } from "@/components/layout/scroll-chrome";
 import { ConnectionBanner } from "@/components/pwa/connection-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -23,6 +24,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
       <Suspense fallback={<MobileNavView pathname="" />}>
         <MobileNav />
       </Suspense>
+      <ScrollChrome />
     </div>
   );
 }

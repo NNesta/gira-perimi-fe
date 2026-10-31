@@ -2,6 +2,7 @@ import { CalendarDays, Crown } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { BackButton } from "@/components/layout/back-button";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { MyClassesCard } from "@/components/teaching/join-class";
 import { TextSizeControl } from "@/components/theme/text-size-control";
@@ -54,6 +55,7 @@ async function Profile() {
 export default function ProfilePage() {
   return (
     <div className="container-page py-10 sm:py-14">
+      <BackButton href="/ikibaho" className="mb-6" />
       <Suspense
         fallback={
           <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">

@@ -321,7 +321,7 @@ export function SignRush({ signs, signedIn = false }: { signs: Sign[]; signedIn?
   const x = multiplier(combo);
 
   return (
-    <div ref={top} className="mx-auto grid max-w-5xl scroll-mt-20 items-start gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
+    <div ref={top} className="mx-auto grid max-w-5xl scroll-mt-3 items-start lg:scroll-mt-20 gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
       <SignRoad sign={sign} roundKey={round} duration={roundSeconds(round)} state={state} remaining={remaining} onTimeout={() => miss(null)}>
         <div className="absolute inset-x-3 top-4 flex items-start justify-between gap-2">
           <div className="flex flex-col items-start gap-1.5">

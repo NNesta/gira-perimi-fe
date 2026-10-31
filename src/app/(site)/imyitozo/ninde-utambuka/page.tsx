@@ -18,6 +18,7 @@ export default function RightOfWayPage() {
   return (
     <>
       <PageHeader
+        back="/imyitozo"
         eyebrow="Imyitozo"
         title="Ninde utambuka mbere?"
         description="Reba ibyapa, amatara n’aho buri kinyabiziga kigana, hanyuma ukande ku gitambuka mbere. Nyuma y’igisubizo, reba uko bagenda."

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { BackButton } from "@/components/layout/back-button";
 import { ClassCodeShare, NewClassForm } from "@/components/teaching/teaching-actions";
 import { Badge } from "@/components/ui/badge";
 import { PageSkeleton } from "@/components/ui/skeleton";
@@ -75,6 +76,7 @@ async function Teaching() {
 export default function TeachingPage() {
   return (
     <div className="container-page py-10 sm:py-14">
+      <BackButton href="/" className="mb-6" />
       <h1 className="text-3xl font-extrabold sm:text-4xl">Amatsinda yanjye</h1>
       <p className="mt-2 max-w-2xl text-muted">
         Kora itsinda, uhe abanyeshuri kode yaryo. Iyo binjiyemo, ubona aho buri wese ageze yitegura ikizamini

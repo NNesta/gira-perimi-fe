@@ -77,7 +77,9 @@ async function History() {
 export default function ExamHistoryPage() {
   return (
     <>
-      <PageHeader eyebrow="Amateka" title="Ibizamini nakoze" description="Ibizamini byose by’igerageza wakoze, amanota yabyo n’isubiramo ry’ibibazo." />
+      <PageHeader
+        back="/ikizamini"
+        eyebrow="Amateka" title="Ibizamini nakoze" description="Ibizamini byose by’igerageza wakoze, amanota yabyo n’isubiramo ry’ibibazo." />
       <div className="container-page py-10">
         <Suspense fallback={<Skeleton className="h-96 rounded-3xl" />}>
           <History />

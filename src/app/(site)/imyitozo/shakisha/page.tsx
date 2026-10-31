@@ -20,6 +20,7 @@ export default function SearchPage({ searchParams }: PageProps<"/imyitozo/shakis
   return (
     <>
       <PageHeader
+        back="/imyitozo"
         eyebrow="Imyitozo"
         title="Shakisha ikibazo"
         description="Wibuka ikibazo kimwe cyakugoye? Andika ijambo ririmo cyangwa nimero yacyo, urebe igisubizo cy’ukuri n’impamvu yacyo."

@@ -8,7 +8,7 @@ import { cn } from "@/lib/cn";
 
 import { isActive, MOBILE_NAV } from "./nav-config";
 
-/** App-style bottom tab bar on phones. Hidden while an exam is running so nothing distracts. */
+/** App-style bottom tab bar on phones. Hidden while an exam is running so nothing distracts, and while scrolling down. */
 export function MobileNav() {
   return <MobileNavView pathname={usePathname()} />;
 }
@@ -23,7 +23,7 @@ export function MobileNavView({ pathname }: { pathname: string }) {
   return (
     <nav
       aria-label="Ibice by’ingenzi"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/92 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/92 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl transition-transform duration-300 motion-reduce:transition-none chrome-hidden:translate-y-full lg:hidden"
     >
       <ul className="mx-auto grid max-w-lg grid-cols-5">
         {MOBILE_NAV.map(({ href, label, icon: Icon }) => {

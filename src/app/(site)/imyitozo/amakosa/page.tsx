@@ -160,6 +160,7 @@ export default function MistakesPage({ searchParams }: PageProps<"/imyitozo/amak
   return (
     <>
       <PageHeader
+        back="/imyitozo"
         eyebrow="Imyitozo"
         title="Ibyo nibeshyeho"
         description="Ibibazo byose wasubije nabi mu myitozo no mu bizamini, icyo wahisemo, igisubizo cy’ukuri n’impamvu yacyo."

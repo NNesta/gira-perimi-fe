@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, BookOpen, CircleCheck, CircleX, History, RotateCcw, Target, WifiOff } from "lucide-react";
+import { ArrowRight, BookOpen, CircleCheck, CircleX, History, RotateCcw, Target, WifiOff } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import { BackButton } from "@/components/layout/back-button";
 import { Explanation } from "@/components/quiz/explanation";
 import { optionStates, QuestionView } from "@/components/quiz/question-view";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -243,9 +244,7 @@ export function PracticeSession({
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-6 flex items-center gap-4">
-        <Link href="/imyitozo" aria-label="Subira ku myitozo" className="grid size-10 shrink-0 place-items-center rounded-xl border border-line bg-surface text-muted transition hover:text-ink">
-          <ArrowLeft className="size-5" />
-        </Link>
+        <BackButton href="/imyitozo" icon />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-3 text-sm font-semibold">
             <span className="flex min-w-0 items-center gap-2">

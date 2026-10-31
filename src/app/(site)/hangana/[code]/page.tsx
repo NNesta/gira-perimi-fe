@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { BackButton } from "@/components/layout/back-button";
 import { ChallengeStandings } from "@/components/challenge/challenge-standings";
 import { ChallengeStart } from "@/components/challenge/challenge-start";
 import { ButtonLink } from "@/components/ui/button";
@@ -124,6 +125,9 @@ async function ChallengeView({ params }: { params: PageProps<"/hangana/[code]">[
 export default function ChallengePage({ params }: PageProps<"/hangana/[code]">) {
   return (
     <div className="container-page py-10 sm:py-16">
+      <div className="mx-auto mb-6 max-w-2xl">
+        <BackButton href="/" />
+      </div>
       <Suspense fallback={<Skeleton className="mx-auto h-96 max-w-2xl rounded-[2.5rem]" />}>
         <ChallengeView params={params} />
       </Suspense>

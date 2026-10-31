@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { BackButton } from "@/components/layout/back-button";
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDayLong } from "@/lib/format";
@@ -66,6 +67,9 @@ async function SharedCard({ params }: { params: PageProps<"/natsinze/[code]">["p
 export default function SharedResultPage({ params }: PageProps<"/natsinze/[code]">) {
   return (
     <div className="container-page py-10 sm:py-16">
+      <div className="mx-auto mb-6 max-w-3xl">
+        <BackButton href="/" />
+      </div>
       <Suspense fallback={<Skeleton className="mx-auto aspect-[1200/630] max-w-3xl rounded-3xl" />}>
         <SharedCard params={params} />
       </Suspense>
